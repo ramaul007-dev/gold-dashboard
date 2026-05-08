@@ -346,6 +346,39 @@ input:checked+.sldr:before{transform:translateX(16px)}
 .tl-panel.grey .tl-action{background:var(--bg3);color:var(--text2)}
 /* M1 timeframe badge */
 .tf-m1{background:var(--abg);color:var(--abd);border-color:var(--abd);font-weight:700}
+
+/* ── BREAKOUT + RETEST PANEL ── */
+.brt-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden}
+.brt-hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--border);cursor:pointer}
+.brt-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.brt-body{padding:.875rem 1rem}
+.brt-steps{display:flex;align-items:center;margin-bottom:1rem;background:var(--bg2);border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.brt-step{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem .4rem;font-size:10px;font-weight:600;color:var(--text3);gap:3px;transition:all .3s;border-right:1px solid var(--border);cursor:default;text-align:center}
+.brt-step:last-child{border-right:none}
+.brt-step .brt-step-icon{font-size:16px}
+.brt-step.done{background:var(--gbg);color:var(--gn)}
+.brt-step.active{background:var(--abg);color:var(--am)}
+.brt-step.fail{background:var(--rbg);color:var(--rd)}
+.brt-step.wait{background:var(--bg2);color:var(--text3)}
+.brt-htf-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.875rem}
+@media(max-width:480px){.brt-htf-row{grid-template-columns:1fr}}
+.brt-htf-card{border-radius:var(--rs);padding:.6rem .875rem;border:1px solid var(--border);background:var(--bg2)}
+.brt-htf-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:4px}
+.brt-htf-val{font-size:13px;font-weight:700}
+.brt-htf-sub{font-size:10px;color:var(--text2);margin-top:2px}
+.brt-htf-card.bull-c{background:var(--gbg);border-color:var(--gbd)}.brt-htf-card.bull-c .brt-htf-val{color:var(--gn)}
+.brt-htf-card.bear-c{background:var(--rbg);border-color:var(--rbd)}.brt-htf-card.bear-c .brt-htf-val{color:var(--rd)}
+.brt-htf-card.neut-c{background:var(--abg);border-color:var(--abd)}.brt-htf-card.neut-c .brt-htf-val{color:var(--am)}
+.brt-signal{border-radius:var(--rs);padding:.875rem 1rem;border:1px solid var(--border);background:var(--bg2);margin-bottom:.75rem}
+.brt-signal.brt-buy{background:var(--gbg);border-color:var(--gbd)}
+.brt-signal.brt-sell{background:var(--rbg);border-color:var(--rbd)}
+.brt-signal.brt-wait{background:var(--abg);border-color:var(--abd)}
+.brt-signal.brt-none{background:var(--bg2);border-color:var(--border)}
+.brt-sig-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.brt-buy .brt-sig-title{color:var(--gn)}.brt-sell .brt-sig-title{color:var(--rd)}.brt-wait .brt-sig-title{color:var(--am)}.brt-none .brt-sig-title{color:var(--text2)}
+.brt-sig-desc{font-size:12px;line-height:1.65}
+.brt-buy .brt-sig-desc{color:var(--gn)}.brt-sell .brt-sig-desc{color:var(--rd)}.brt-wait .brt-sig-desc{color:var(--am)}.brt-none .brt-sig-desc{color:var(--text2)}
+.brt-detail{font-size:11px;color:var(--text2);line-height:1.7;background:var(--bg2);border-radius:var(--rs);padding:.625rem .875rem}
 </style>
 </head>
 <body>
@@ -489,6 +522,46 @@ input:checked+.sldr:before{transform:translateX(16px)}
   </div>
 </div>
 
+
+<!-- BREAKOUT + RETEST + EKSEKUSI PANEL -->
+<div class="brt-panel" id="brt-panel">
+  <div class="brt-hdr" onclick="togBRT()">
+    <span class="brt-title">🔍 Breakout → Retest → Eksekusi <span id="brt-badge" style="font-size:11px;font-weight:400;color:var(--text2)">— Konfirmasi H4+H1</span></span>
+    <span id="brt-icon" style="font-size:11px;color:var(--text2)">▼</span>
+  </div>
+  <div class="brt-body" id="brt-body">
+    <!-- Status Steps -->
+    <div class="brt-steps">
+      <div class="brt-step wait" id="brt-s1"><span class="brt-step-icon">📊</span>H4 + H1<br>Bias</div>
+      <div class="brt-step wait" id="brt-s2"><span class="brt-step-icon">💥</span>Breakout<br>Level</div>
+      <div class="brt-step wait" id="brt-s3"><span class="brt-step-icon">🔄</span>Retest<br>Zone</div>
+      <div class="brt-step wait" id="brt-s4"><span class="brt-step-icon">✅</span>Konfirmasi<br>M30/M15/M5</div>
+      <div class="brt-step wait" id="brt-s5"><span class="brt-step-icon">🚀</span>EKSEKUSI</div>
+    </div>
+    <!-- HTF Bias Confirmation -->
+    <div class="brt-htf-row">
+      <div class="brt-htf-card neut-c" id="brt-h4-card">
+        <div class="brt-htf-label">H4 — Bias Besar</div>
+        <div class="brt-htf-val" id="brt-h4-val">Memuat...</div>
+        <div class="brt-htf-sub" id="brt-h4-sub">—</div>
+      </div>
+      <div class="brt-htf-card neut-c" id="brt-h1-card">
+        <div class="brt-htf-label">H1 — Bias Menengah</div>
+        <div class="brt-htf-val" id="brt-h1-val">Memuat...</div>
+        <div class="brt-htf-sub" id="brt-h1-sub">—</div>
+      </div>
+    </div>
+    <!-- Main Signal -->
+    <div class="brt-signal brt-none" id="brt-signal">
+      <div class="brt-sig-title" id="brt-sig-title">⏳ Menunggu Data...</div>
+      <div class="brt-sig-desc" id="brt-sig-desc">Refresh untuk memulai analisis breakout+retest.</div>
+    </div>
+    <!-- Detail -->
+    <div class="brt-detail" id="brt-detail">
+      🔍 <strong>Cara kerja:</strong> Panel ini cek H4+H1 untuk bias → deteksi breakout level key → tunggu candle retest zona breakout → konfirmasi di M30/M15/M5 → sinyal eksekusi.
+    </div>
+  </div>
+</div>
 
 <!-- TRAFFIC LIGHT ENTRY PANEL -->
 <div class="tl-panel grey" id="tl-panel">
@@ -1391,9 +1464,9 @@ function togI(x){
 }
 function togAuto(on){
   clearInterval(autoTmr);clearInterval(autoCd);document.getElementById('acd').textContent='';
-  if(!on)return;cdS=(['1min','5min','15min'].includes(ctf))?15:60;document.getElementById('acd').textContent=cdS+'s';
-  autoCd=setInterval(()=>{cdS--;document.getElementById('acd').textContent=cdS+'s';if(cdS<=0)cdS=(['1min','5min','15min'].includes(ctf))?15:60},1000);
-  const rfMs=(['1min','5min','15min'].includes(ctf))?15000:60000;autoTmr=setInterval(()=>{cache={};loadData();cdS=Math.floor(rfMs/1000)},rfMs);
+  if(!on)return;cdS=30;document.getElementById('acd').textContent=cdS+'s';
+  autoCd=setInterval(()=>{cdS--;document.getElementById('acd').textContent=cdS+'s';if(cdS<=0)cdS=30},1000);
+  const rfMs=30000;autoTmr=setInterval(()=>{cache={};loadData();cdS=30},rfMs);
 }
 
 // ── RENDER ──
@@ -1469,6 +1542,9 @@ function render(){
 
   // Traffic Light Entry Panel
   renderTrafficLight(ltfC, htfC, lRSI, ltf, htf, obs, fvgs, bkLevels, lE20, lE50, BB, lastC);
+
+  // Breakout + Retest Panel (data penuh tersedia setelah loadAllTF, ini partial render)
+  renderBreakoutRetest(cache, ctf);
 }
 
 // ── ATR ──
@@ -1549,32 +1625,77 @@ function calcEntrySignal(allCache, currentTF){
   const atr=calcATR(ltfC);
 
   // ════════════════════════════════
-  // LAYER 1: HTF BIAS (D1 + H4)
+  // LAYER 1: MID BIAS (M30 + M15)
   // Bobot: 30% dari total sinyal
   // ════════════════════════════════
 
-  // --- D1 Bias ---
-  const d1C=allCache['1day'];
-  let d1Bias=0; // +1=bull, -1=bear, 0=neutral
-  if(d1C&&d1C.length>=20){
-    const cls=d1C.map(c=>c.c);
-    const e20=calcEMA(cls,20).filter(v=>v!==null).pop();
-    const e50=calcEMA(cls,50).filter(v=>v!==null).pop();
-    const rsi=calcRSI(cls).filter(v=>v!==null).pop()||50;
-    const ms=marketStructure(d1C);
-    const lastD1=d1C[d1C.length-1];
-    const d1Bull=(e20&&e50&&e20>e50)||(ms==='bullish')||(rsi<45&&lastD1.c>lastD1.o);
-    const d1Bear=(e20&&e50&&e20<e50)||(ms==='bearish')||(rsi>55&&lastD1.c<lastD1.o);
-    if(d1Bull&&!d1Bear){
-      d1Bias=1; buyScore+=3;
-      checks.push({pass:true,icon:'✅',txt:`D1 Bias BULLISH — EMA${e20>e50?'+':''} RSI${rsi.toFixed(0)} Struktur ${ms}`});
-    } else if(d1Bear&&!d1Bull){
-      d1Bias=-1; sellScore+=3;
-      checks.push({fail:true,icon:'❌',txt:`D1 Bias BEARISH — EMA${e20<e50?'+':''} RSI${rsi.toFixed(0)} Struktur ${ms}`});
+  // --- M30 Bias ---
+  const m30C=allCache['30min'];
+  let m30Bias=0;
+  if(m30C&&m30C.length>=20){
+    const clsM30=m30C.map(c=>c.c);
+    const e20m30=calcEMA(clsM30,20).filter(v=>v!==null).pop();
+    const e50m30=calcEMA(clsM30,50).filter(v=>v!==null).pop();
+    const rsim30=calcRSI(clsM30).filter(v=>v!==null).pop()||50;
+    const msm30=marketStructure(m30C);
+    const momm30=momentum(m30C,5);
+    const bouncem30=isBouncing(m30C,8);
+    const bullCntM30=[e20m30&&e50m30&&e20m30>e50m30, msm30==='bullish', momm30==='bull', bouncem30.up].filter(Boolean).length;
+    const bearCntM30=[e20m30&&e50m30&&e20m30<e50m30, msm30==='bearish', momm30==='bear', bouncem30.dn].filter(Boolean).length;
+    if(bullCntM30>=2&&bullCntM30>bearCntM30){
+      m30Bias=1; buyScore+=3;
+      let desc=[];
+      if(e20m30&&e50m30&&e20m30>e50m30)desc.push('EMA Bull');
+      if(msm30==='bullish')desc.push('Struktur HH/HL');
+      if(momm30==='bull')desc.push('Momentum ↑');
+      if(bouncem30.up)desc.push('Bounce naik');
+      checks.push({pass:true,icon:'✅',txt:`M30 BULLISH — ${desc.slice(0,3).join(', ')}`});
+    } else if(bearCntM30>=2&&bearCntM30>bullCntM30){
+      m30Bias=-1; sellScore+=3;
+      let desc=[];
+      if(e20m30&&e50m30&&e20m30<e50m30)desc.push('EMA Bear');
+      if(msm30==='bearish')desc.push('Struktur LH/LL');
+      if(momm30==='bear')desc.push('Momentum ↓');
+      if(bouncem30.dn)desc.push('Bounce turun');
+      checks.push({fail:true,icon:'❌',txt:`M30 BEARISH — ${desc.slice(0,3).join(', ')}`});
     } else {
-      checks.push({warn:true,icon:'⚠️',txt:`D1 Netral — RSI ${rsi.toFixed(0)}, struktur ${ms}`});
+      checks.push({warn:true,icon:'⚠️',txt:`M30 Netral — RSI ${rsim30.toFixed(0)}, struktur ${msm30}`});
     }
-  } else checks.push({warn:true,icon:'⚠️',txt:'D1: Sedang dimuat di background...'});
+  } else checks.push({warn:true,icon:'⚠️',txt:'M30: Sedang dimuat di background...'});
+
+  // --- M15 Bias ---
+  const m15C=allCache['15min'];
+  let m15Bias=0;
+  if(m15C&&m15C.length>=20){
+    const clsM15=m15C.map(c=>c.c);
+    const e20m15=calcEMA(clsM15,20).filter(v=>v!==null).pop();
+    const e50m15=calcEMA(clsM15,50).filter(v=>v!==null).pop();
+    const rsim15=calcRSI(clsM15).filter(v=>v!==null).pop()||50;
+    const msm15=marketStructure(m15C);
+    const momm15=momentum(m15C,5);
+    const bouncem15=isBouncing(m15C,8);
+    const bullCntM15=[e20m15&&e50m15&&e20m15>e50m15, msm15==='bullish', momm15==='bull', bouncem15.up, rsim15<50].filter(Boolean).length;
+    const bearCntM15=[e20m15&&e50m15&&e20m15<e50m15, msm15==='bearish', momm15==='bear', bouncem15.dn, rsim15>50].filter(Boolean).length;
+    if(bullCntM15>=2&&bullCntM15>bearCntM15){
+      m15Bias=1; buyScore+=3;
+      let desc=[];
+      if(e20m15&&e50m15&&e20m15>e50m15)desc.push('EMA Bull');
+      if(msm15==='bullish')desc.push('Struktur HH/HL');
+      if(momm15==='bull')desc.push('Momentum ↑');
+      if(bouncem15.up)desc.push('Bounce naik');
+      checks.push({pass:true,icon:'✅',txt:`M15 BULLISH — ${desc.slice(0,3).join(', ')}`});
+    } else if(bearCntM15>=2&&bearCntM15>bullCntM15){
+      m15Bias=-1; sellScore+=3;
+      let desc=[];
+      if(e20m15&&e50m15&&e20m15<e50m15)desc.push('EMA Bear');
+      if(msm15==='bearish')desc.push('Struktur LH/LL');
+      if(momm15==='bear')desc.push('Momentum ↓');
+      if(bouncem15.dn)desc.push('Bounce turun');
+      checks.push({fail:true,icon:'❌',txt:`M15 BEARISH — ${desc.slice(0,3).join(', ')}`});
+    } else {
+      checks.push({warn:true,icon:'⚠️',txt:`M15 Netral — RSI ${rsim15.toFixed(0)}, struktur ${msm15}`});
+    }
+  } else checks.push({warn:true,icon:'⚠️',txt:'M15: Sedang dimuat di background...'});
 
   // --- H4 Bias ---
   const h4C=allCache['4h'];
@@ -1867,8 +1988,246 @@ function renderEntrySignal(result){
   }
 }
 
+// ── BREAKOUT + RETEST ENGINE ──
+let brtOpen=true;
+function togBRT(){brtOpen=!brtOpen;document.getElementById('brt-body').style.display=brtOpen?'block':'none';document.getElementById('brt-icon').textContent=brtOpen?'▼':'▶'}
+
+function calcHTFBias(candles, label){
+  if(!candles||candles.length<10) return{bias:'neut',desc:'Data belum cukup',score:0};
+  const cls=candles.map(c=>c.c);
+  const e20=calcEMA(cls,20).filter(v=>v!==null).pop();
+  const e50=calcEMA(cls,50).filter(v=>v!==null).pop();
+  const rsi=calcRSI(cls).filter(v=>v!==null).pop()||50;
+  const ms=marketStructure(candles);
+  const mom=momentum(candles,5);
+  const bounce=isBouncing(candles,8);
+  const bullSig=[e20&&e50&&e20>e50, ms==='bullish', mom==='bull', bounce.up, rsi<50].filter(Boolean).length;
+  const bearSig=[e20&&e50&&e20<e50, ms==='bearish', mom==='bear', bounce.dn, rsi>50].filter(Boolean).length;
+  let desc=[];
+  if(bullSig>bearSig&&bullSig>=2){
+    if(e20&&e50&&e20>e50) desc.push('EMA Bullish');
+    if(ms==='bullish') desc.push('Struktur HH/HL');
+    if(mom==='bull') desc.push('Momentum ↑');
+    if(bounce.up) desc.push('Bounce naik');
+    return{bias:'bull', desc:desc.slice(0,2).join(' · ')||'Bullish', score:bullSig, rsi, ms};
+  } else if(bearSig>bullSig&&bearSig>=2){
+    if(e20&&e50&&e20<e50) desc.push('EMA Bearish');
+    if(ms==='bearish') desc.push('Struktur LH/LL');
+    if(mom==='bear') desc.push('Momentum ↓');
+    if(bounce.dn) desc.push('Bounce turun');
+    return{bias:'bear', desc:desc.slice(0,2).join(' · ')||'Bearish', score:bearSig, rsi, ms};
+  }
+  return{bias:'neut', desc:`RSI ${rsi.toFixed(0)}, Sideways`, score:0, rsi, ms};
+}
+
+// Deteksi apakah breakout baru terjadi (dalam N candle terakhir)
+function detectRecentBreakout(candles, levels, lookback=8){
+  const n=candles.length;
+  const lb=Math.min(lookback, n-2);
+  let result=null;
+  // Cek breakout UP
+  for(let i=n-lb; i<n; i++){
+    const c=candles[i], prev=candles[i-1];
+    for(const r of levels.resistances){
+      if(prev.c<=r.price && c.c>r.price){
+        const candle_age=n-1-i;
+        if(!result||candle_age<result.age){
+          result={dir:'bull', level:r.price, type:r.type, age:candle_age, breakCandle:c};
+        }
+      }
+    }
+    // Cek breakout DOWN
+    for(const s of levels.supports){
+      if(prev.c>=s.price && c.c<s.price){
+        const candle_age=n-1-i;
+        if(!result||candle_age<result.age){
+          result={dir:'bear', level:s.price, type:s.type, age:candle_age, breakCandle:c};
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// Deteksi retest: harga kembali ke zona breakout setelah breakout
+function detectRetest(candles, breakout, tolerance=0.003){
+  if(!breakout) return{retesting:false, retested:false};
+  const n=candles.length;
+  const last=candles[n-1];
+  const lvl=breakout.level;
+  const tol=lvl*tolerance; // 0.3% tolerance
+  // Retest: harga sentuh kembali level breakout dari arah yang benar
+  if(breakout.dir==='bull'){
+    // Setelah breakout naik, retest = harga turun kembali ke level (tapi tidak tutup di bawahnya)
+    const retesting=last.l<=lvl+tol&&last.l>=lvl-tol&&last.c>lvl-tol;
+    // Sudah retest dan bounce: candle sebelumnya menyentuh, candle sekarang hijau naik
+    const prev=candles[n-2];
+    const retested=prev&&prev.l<=lvl+tol&&prev.l>=lvl-tol*2&&last.c>last.o&&last.c>lvl;
+    return{retesting, retested};
+  } else {
+    // Setelah breakout turun, retest = harga naik kembali ke level (tapi tidak tutup di atasnya)
+    const retesting=last.h>=lvl-tol&&last.h<=lvl+tol&&last.c<lvl+tol;
+    const prev=candles[n-2];
+    const retested=prev&&prev.h>=lvl-tol&&prev.h<=lvl+tol*2&&last.c<last.o&&last.c<lvl;
+    return{retesting, retested};
+  }
+}
+
+// Konfirmasi entry di LTF (M30, M15, M5)
+function confirmEntryLTF(allCache, dir, tfs=['30min','15min','5min']){
+  let confirmCount=0;
+  const details=[];
+  for(const tf of tfs){
+    const c=allCache[tf];
+    if(!c||c.length<5){details.push({tf:TLBL[tf]||tf,ok:false,desc:'Belum ada data'});continue;}
+    const last=c[c.length-1];
+    const prev=c[c.length-2];
+    const cls=c.map(x=>x.c);
+    const e20=calcEMA(cls,20).filter(v=>v!==null).pop();
+    const e50=calcEMA(cls,50).filter(v=>v!==null).pop();
+    const ms=marketStructure(c);
+    const mom=momentum(c,5);
+    const bullCandle=last.c>last.o;
+    const bd=Math.abs(last.c-last.o), rng=last.h-last.l||1, br=bd/rng;
+    let ok=false, desc='';
+    if(dir==='bull'){
+      const sigs=[bullCandle&&br>0.4, ms==='bullish', mom==='bull', e20&&e50&&e20>e50].filter(Boolean).length;
+      ok=sigs>=2;
+      const parts=[];
+      if(bullCandle&&br>0.4) parts.push('Candle hijau kuat');
+      if(ms==='bullish') parts.push('HH/HL');
+      if(mom==='bull') parts.push('Momentum ↑');
+      if(e20&&e50&&e20>e50) parts.push('EMA Bull');
+      desc=ok?(parts.slice(0,2).join(', ')||'Bullish'):'Belum konfirmasi';
+    } else {
+      const sigs=[!bullCandle&&br>0.4, ms==='bearish', mom==='bear', e20&&e50&&e20<e50].filter(Boolean).length;
+      ok=sigs>=2;
+      const parts=[];
+      if(!bullCandle&&br>0.4) parts.push('Candle merah kuat');
+      if(ms==='bearish') parts.push('LH/LL');
+      if(mom==='bear') parts.push('Momentum ↓');
+      if(e20&&e50&&e20<e50) parts.push('EMA Bear');
+      desc=ok?(parts.slice(0,2).join(', ')||'Bearish'):'Belum konfirmasi';
+    }
+    if(ok) confirmCount++;
+    details.push({tf:TLBL[tf]||tf, ok, desc});
+  }
+  return{confirmCount, details};
+}
+
+function renderBreakoutRetest(allCache, currentTF){
+  const ltfC=allCache[currentTF];
+  if(!ltfC||ltfC.length<10) return;
+
+  const h4C=allCache['4h'];
+  const h1C=allCache['1h'];
+  const price=ltfC[ltfC.length-1].c;
+
+  // Step 1: H4 + H1 Bias
+  const h4Bias=calcHTFBias(h4C,'H4');
+  const h1Bias=calcHTFBias(h1C,'H1');
+
+  // Render HTF cards
+  const biasMap={bull:{cls:'bull-c',lbl:'🟢 BULLISH'},bear:{cls:'bear-c',lbl:'🔴 BEARISH'},neut:{cls:'neut-c',lbl:'🟡 NETRAL'}};
+  const h4bm=biasMap[h4Bias.bias];
+  const h1bm=biasMap[h1Bias.bias];
+  const h4card=document.getElementById('brt-h4-card');
+  h4card.className='brt-htf-card '+h4bm.cls;
+  document.getElementById('brt-h4-val').textContent=h4bm.lbl;
+  document.getElementById('brt-h4-sub').textContent=h4Bias.desc+(h4Bias.rsi?` | RSI ${h4Bias.rsi.toFixed(0)}`:'');
+  const h1card=document.getElementById('brt-h1-card');
+  h1card.className='brt-htf-card '+h1bm.cls;
+  document.getElementById('brt-h1-val').textContent=h1bm.lbl;
+  document.getElementById('brt-h1-sub').textContent=h1Bias.desc+(h1Bias.rsi?` | RSI ${h1Bias.rsi.toFixed(0)}`:'');
+
+  // HTF agreement?
+  const htfAgree=h4Bias.bias!=='neut'&&h4Bias.bias===h1Bias.bias;
+  const htfDir=htfAgree?h4Bias.bias:'neut';
+
+  // Step 2: Breakout detection on LTF
+  const e20arr=calcEMA(ltfC.map(c=>c.c),20);
+  const e50arr=calcEMA(ltfC.map(c=>c.c),50);
+  const BBltf=calcBB(ltfC.map(c=>c.c));
+  const levels=detectBreakoutLevels(ltfC,e20arr,e50arr,BBltf);
+  const brkout=detectRecentBreakout(ltfC,levels,10);
+
+  // Step 3: Retest
+  const retest=detectRetest(ltfC,brkout,0.003);
+
+  // Step 4: LTF confirmation
+  const ltfConf=confirmEntryLTF(allCache, brkout?brkout.dir:htfDir);
+
+  // ── Update step indicators ──
+  const setStep=(id,state)=>document.getElementById(id).className='brt-step '+state;
+  // S1: HTF Bias
+  setStep('brt-s1', htfAgree?'done':(h4Bias.bias!=='neut'||h1Bias.bias!=='neut'?'active':'wait'));
+  // S2: Breakout
+  const brkOk=brkout&&(htfDir==='neut'||(brkout.dir===htfDir));
+  setStep('brt-s2', brkout?(brkOk?'done':'fail'):'wait');
+  // S3: Retest
+  setStep('brt-s3', retest.retested?'done':retest.retesting?'active':'wait');
+  // S4: LTF confirm
+  setStep('brt-s4', ltfConf.confirmCount>=2?'done':ltfConf.confirmCount>=1?'active':'wait');
+  // S5: Execute
+  const canExec=htfAgree&&brkOk&&retest.retested&&ltfConf.confirmCount>=2;
+  const nearExec=htfAgree&&brkOk&&(retest.retested||retest.retesting)&&ltfConf.confirmCount>=1;
+  setStep('brt-s5', canExec?'done':nearExec?'active':'wait');
+
+  // ── Main signal box ──
+  const sigEl=document.getElementById('brt-signal');
+  const titleEl=document.getElementById('brt-sig-title');
+  const descEl=document.getElementById('brt-sig-desc');
+
+  if(canExec){
+    const dir=brkout.dir;
+    sigEl.className='brt-signal '+(dir==='bull'?'brt-buy':'brt-sell');
+    titleEl.textContent=dir==='bull'?'🚀 EKSEKUSI BUY — Semua Konfirmasi Terpenuhi!':'📉 EKSEKUSI SELL — Semua Konfirmasi Terpenuhi!';
+    const ltfStr=ltfConf.details.filter(d=>d.ok).map(d=>d.tf).join('+');
+    descEl.textContent=`H4 ${h4bm.lbl} + H1 ${h1bm.lbl} → Breakout $${brkout.level.toFixed(2)} (${brkout.type}) → Retest selesai → Konfirmasi: ${ltfStr}. Entry sekarang!`;
+  } else if(nearExec){
+    const dir=brkout?brkout.dir:htfDir;
+    sigEl.className='brt-signal brt-wait';
+    if(retest.retesting&&!retest.retested){
+      titleEl.textContent='🔄 RETEST SEDANG BERLANGSUNG — Tunggu Candle Close';
+      descEl.textContent=`Harga kembali ke level breakout $${brkout.level.toFixed(2)} (${brkout.type}). Tunggu candle CLOSE konfirmasi arah ${dir==='bull'?'NAIK (hijau)':'TURUN (merah)'} dari level ini sebelum entry.`;
+    } else {
+      titleEl.textContent='⏳ HAMPIR SIAP — Tunggu Konfirmasi LTF';
+      descEl.textContent=`Breakout + retest sudah terjadi. Butuh konfirmasi minimal 2 dari 3 TF (M30/M15/M5). Sekarang baru ${ltfConf.confirmCount}/3 konfirmasi.`;
+    }
+  } else if(brkOk&&brkout){
+    sigEl.className='brt-signal brt-wait';
+    titleEl.textContent=`💥 BREAKOUT ${brkout.dir==='bull'?'NAIK':'TURUN'} TERDETEKSI — Tunggu Retest`;
+    descEl.textContent=`Breakout level $${brkout.level.toFixed(2)} (${brkout.type}) terjadi ${brkout.age} candle lalu. JANGAN ENTRY sekarang — tunggu harga kembali retest zona breakout ini dulu, lalu konfirmasi di M30/M15/M5.`;
+  } else if(htfAgree){
+    sigEl.className='brt-signal brt-wait';
+    titleEl.textContent=`📊 H4+H1 ${h4bm.lbl} — Menunggu Breakout Level Key`;
+    descEl.textContent=`Bias ${htfDir==='bull'?'BULLISH':'BEARISH'} terkonfirmasi di H4 dan H1. Tunggu breakout dari level key terdekat: Resistance $${levels.resistances[0]?levels.resistances[0].price.toFixed(2):'—'} / Support $${levels.supports[0]?levels.supports[0].price.toFixed(2):'—'}.`;
+  } else if(brkout&&!brkOk){
+    sigEl.className='brt-signal brt-none';
+    titleEl.textContent='⚠️ Breakout Berlawanan Arah HTF — Skip!';
+    descEl.textContent=`Breakout ${brkout.dir==='bull'?'NAIK':'TURUN'} terdeteksi TAPI berlawanan dengan bias H4 (${h4bm.lbl}) + H1 (${h1bm.lbl}). Jangan ikut breakout ini — risiko false breakout tinggi!`;
+  } else {
+    sigEl.className='brt-signal brt-none';
+    titleEl.textContent='⏸️ Belum Ada Setup — Sabar';
+    descEl.textContent=`H4: ${h4bm.lbl} | H1: ${h1bm.lbl}. ${!htfAgree?'H4 dan H1 belum sepakat arah. Tunggu keduanya konfirmasi satu arah dulu.':'Tunggu breakout dari level key terdekat.'}`;
+  }
+
+  // Detail rows
+  const ltfRows=ltfConf.details.map(d=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px">${d.ok?'✅':'⏳'} <strong>${d.tf}</strong>: ${d.desc}</span>`).join('');
+  document.getElementById('brt-detail').innerHTML=
+    `<strong>🔍 Status Detail:</strong><br>`+
+    `📊 H4: ${h4Bias.desc||'—'} &nbsp;|&nbsp; H1: ${h1Bias.desc||'—'}<br>`+
+    (brkout?`💥 Breakout: ${brkout.dir==='bull'?'⬆️ Naik':'⬇️ Turun'} di $${brkout.level.toFixed(2)} (${brkout.type}), ${brkout.age} candle lalu<br>`:'💥 Breakout: Belum terdeteksi<br>')+
+    `🔄 Retest: ${retest.retested?'✅ Sudah selesai, bounce terkonfirmasi':retest.retesting?'🔄 Sedang berlangsung':'⏳ Belum terjadi'}<br>`+
+    `📱 Konfirmasi LTF: ${ltfRows}<br>`+
+    `<span style="color:var(--text3);font-size:10px">💡 Urutan: H4+H1 Bias → Breakout level key → Retest zona → Konfirmasi M30+M15+M5 → Entry</span>`;
+
+  // Badge
+  document.getElementById('brt-badge').textContent=canExec?'✅ ENTRY!':nearExec?'⏳ Hampir...':brkOk?'💥 Breakout':'— Menunggu';
+}
+
 async function loadAllTF(){
-  const tfs=['5min','15min','30min','1h','4h','1day'];
+  const tfs=['1min','5min','15min','30min','1h','4h','1day'];
   for(const tf of tfs){if(!cache[tf]){try{await getC(tf)}catch(e){}}}
 }
 // Redraw on resize
@@ -1888,6 +2247,8 @@ async function loadData(){
     await loadAllTF();
     const entryResult=calcEntrySignal(cache,ctf);
     renderEntrySignal(entryResult);
+    // Re-render Breakout+Retest dengan data lengkap semua TF
+    renderBreakoutRetest(cache,ctf);
   }catch(e){
     setSts('derr','Gagal: '+e.message);
     document.getElementById('sigt').textContent='Gagal memuat data';
