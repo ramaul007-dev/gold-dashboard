@@ -310,14 +310,23 @@ input:checked+.sldr:before{transform:translateX(16px)}
     <span class="gapi-icon">📡</span>
     <div class="gapi-label">
       <strong>Sumber Data</strong>
-      <span>gold-api.com (gratis, otomatis) + GoldAPI.io (opsional)</span>
+      <span>Twelve Data (utama, CORS ok) + GoldAPI.io (backup)</span>
     </div>
   </div>
-  <span class="gapi-free">✅ gold-api.com GRATIS</span>
-  <div class="gapi-row">
-    <input class="gapi-inp" id="goldapi-key-input" type="password" placeholder="GoldAPI.io key (opsional, untuk harga lebih akurat)" autocomplete="off">
-    <button class="gapi-save" onclick="saveGoldKey()">Simpan</button>
-    <span class="gapi-badge none" id="gapi-badge">Opsional</span>
+  <div class="gapi-row" style="flex-direction:column;align-items:stretch;gap:6px">
+    <div style="display:flex;gap:6px;align-items:center">
+      <span style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:88px">🔑 Twelve Data</span>
+      <input class="gapi-inp" id="twelve-key-input" type="password" placeholder="API Key Twelve Data (gratis di twelvedata.com)" autocomplete="off">
+      <button class="gapi-save" onclick="saveTwelveKey()">Simpan</button>
+      <span class="gapi-badge none" id="twelve-badge">Belum ada</span>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:88px">🥇 GoldAPI.io</span>
+      <input class="gapi-inp" id="goldapi-key-input" type="password" placeholder="GoldAPI.io key (opsional, backup)" autocomplete="off">
+      <button class="gapi-save" onclick="saveGoldKey()">Simpan</button>
+      <span class="gapi-badge none" id="gapi-badge">Opsional</span>
+    </div>
+    <div style="font-size:10px;color:var(--text3);line-height:1.5">💡 Daftar gratis di <strong>twelvedata.com</strong> → My API Keys → Copy → paste di atas. 800 req/hari, data XAU/USD akurat &amp; CORS support.</div>
   </div>
 </div>
 
@@ -585,6 +594,16 @@ input:checked+.sldr:before{transform:translateX(16px)}
 let GOLD_API_KEY = localStorage.getItem('goldapi_key') || '';
 let ctf='1h', sE=true, sB=true, sOB=true, sFV=true, sRSI=true;
 
+// Init input Twelve Data key dari localStorage
+setTimeout(()=>{
+  const inp12=document.getElementById('twelve-key-input');
+  const badge12=document.getElementById('twelve-badge');
+  if(TWELVE_KEY&&inp12){
+    inp12.value=TWELVE_KEY;
+    if(badge12){badge12.textContent='✅ Aktif';badge12.className='gapi-badge ok';}
+  }
+},50);
+
 // Init input GoldAPI key dari localStorage
 setTimeout(()=>{
   const inp=document.getElementById('goldapi-key-input');
@@ -595,6 +614,15 @@ setTimeout(()=>{
   }
 },50);
 
+function saveTwelveKey(){
+  const inp=document.getElementById('twelve-key-input');
+  const badge=document.getElementById('twelve-badge');
+  const key=inp?.value?.trim();
+  TWELVE_KEY=key||'';
+  if(key){localStorage.setItem('twelve_key',key);if(badge){badge.textContent='✅ Aktif';badge.className='gapi-badge ok';}}
+  else{localStorage.removeItem('twelve_key');if(badge){badge.textContent='Belum ada';badge.className='gapi-badge none';}}
+  cache={};loadData();
+}
 function saveGoldKey(){
   const inp=document.getElementById('goldapi-key-input');
   const badge=document.getElementById('gapi-badge');
@@ -1139,23 +1167,27 @@ function pills(ps){return ps.map(p=>`<span class="pill ${p.t==='r'?'pr':p.t==='c
 // ── FETCH ──
 function setSts(cls,txt){document.getElementById('dot').className='dot '+cls;document.getElementById('stxt').textContent=txt}
 
-// Map interval dashboard → interval gold-api.com
-const GA_IV_MAP = {
-  '5min':'5m','15min':'15m','30min':'30m',
-  '1h':'1h','4h':'4h','1day':'1d','1week':'1w'
+// Map interval dashboard → interval Twelve Data
+const TD_IV_MAP = {
+  '5min':'5min','15min':'15min','30min':'30min',
+  '1h':'1h','4h':'4h','1day':'1day','1week':'1week'
 };
 
-// ── SUMBER 1: gold-api.com (GRATIS, TANPA API KEY, OHLC CANDLE) ──
-async function fetchGoldApiCom(iv){
-  const gaIv = GA_IV_MAP[iv] || '1h';
-  // gold-api.com endpoint OHLC: GET /price/XAU/history?interval=Xm&limit=60
-  const r = await fetch(`https://api.gold-api.com/price/XAU/history?interval=${gaIv}&limit=60`);
-  if(!r.ok) throw new Error('gold-api.com: HTTP '+r.status);
+let TWELVE_KEY = localStorage.getItem('twelve_key') || '';
+
+// ── SUMBER 1: Twelve Data (CORS support, gratis 800 req/hari) ──
+async function fetchTwelveData(iv){
+  const key = TWELVE_KEY || document.getElementById('twelve-key-input')?.value?.trim();
+  if(!key) throw new Error('Twelve Data key kosong');
+  const tdIv = TD_IV_MAP[iv] || '1h';
+  const url = `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${tdIv}&outputsize=60&apikey=${key}&format=JSON`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('Twelve Data: HTTP '+r.status);
   const d = await r.json();
-  // Respons: { data: [{timestamp, open, high, low, close, volume}] }
-  if(!d||!d.data||!d.data.length) throw new Error('gold-api.com: data kosong');
-  return d.data.map(v=>({
-    t: Math.floor(new Date(v.timestamp||v.time||v.date).getTime()/1000),
+  if(d.status==='error') throw new Error('Twelve Data: '+d.message);
+  if(!d.values||!d.values.length) throw new Error('Twelve Data: data kosong');
+  return d.values.map(v=>({
+    t: Math.floor(new Date(v.datetime).getTime()/1000),
     o: +v.open, h: +v.high, l: +v.low, c: +v.close, v: +(v.volume||0)
   })).filter(c=>c.t>0&&c.c>0).sort((a,b)=>a.t-b.t);
 }
@@ -1170,7 +1202,7 @@ async function fetchGoldAPIioSpot(){
   if(!r.ok) throw new Error('GoldAPI.io: HTTP '+r.status);
   const d = await r.json();
   if(d.error) throw new Error('GoldAPI.io: '+d.error);
-  return d; // { price, open_price, high_price, low_price, prev_close_price, ch, chp }
+  return d;
 }
 
 // ── SUMBER 3: Candle sintetis dari GoldAPI.io historical harian ──
@@ -1205,42 +1237,23 @@ async function fetchGoldAPIioHistorical(days=60){
   return candles.sort((a,b)=>a.t-b.t);
 }
 
-// ── BUILDER CANDLE: buat candle intraday sintetis dari D1 ──
-function buildIntradayFromDaily(dailyCandles, ivMs){
-  // Pecah setiap candle harian jadi N candle kecil
-  const result=[];
-  dailyCandles.slice(-20).forEach(d=>{
-    const steps = Math.floor(8*3600000/ivMs); // jam pasar/interval
-    const range = d.h - d.l;
-    for(let i=0;i<steps;i++){
-      const frac = i/steps;
-      const price = d.l + range*( 0.3 + 0.4*Math.sin(Math.PI*frac) + (Math.random()-0.5)*0.15 );
-      result.push({
-        t: d.t + Math.floor(i*ivMs/1000),
-        o: price * (1+(Math.random()-0.5)*0.0005),
-        h: price * (1+Math.random()*0.001),
-        l: price * (1-Math.random()*0.001),
-        c: price, v: 0
-      });
-    }
-  });
-  return result.slice(-60);
-}
-
 const IV_MS = {'5min':300000,'15min':900000,'30min':1800000,'1h':3600000,'4h':14400000,'1day':86400000,'1week':604800000};
 
 async function getC(iv){
   if(cache[iv]) return cache[iv];
 
-  // === COBA 1: gold-api.com (GRATIS, NO KEY, OHLC) ===
-  try{
-    setSts('dwt','Mengambil data gold-api.com...');
-    const d = await fetchGoldApiCom(iv);
-    cache[iv]=d; dsrc='gold-api.com (gratis)';
-    setSts('dok','gold-api.com ✓ — '+new Date().toLocaleTimeString('id-ID'));
-    return d;
-  }catch(e1){
-    console.warn('gold-api.com gagal:',e1.message);
+  // === COBA 1: Twelve Data (CORS ok, gratis 800 req/hari) ===
+  const tdKey = TWELVE_KEY || document.getElementById('twelve-key-input')?.value?.trim();
+  if(tdKey){
+    try{
+      setSts('dwt','Mengambil data Twelve Data...');
+      const d = await fetchTwelveData(iv);
+      cache[iv]=d; dsrc='Twelve Data ✓';
+      setSts('dok','Twelve Data ✓ — '+new Date().toLocaleTimeString('id-ID'));
+      return d;
+    }catch(e1){
+      console.warn('Twelve Data gagal:',e1.message);
+    }
   }
 
   // === COBA 2: GoldAPI.io spot + historical (perlu key) ===
@@ -1251,35 +1264,37 @@ async function getC(iv){
         setSts('dwt','GoldAPI.io historical...');
         const d = await fetchGoldAPIioHistorical(60);
         cache[iv]=d; dsrc='GoldAPI.io';
+        setSts('dok','GoldAPI.io ✓ — '+new Date().toLocaleTimeString('id-ID'));
         return d;
       }catch(e2){ console.warn('GoldAPI.io historical gagal:',e2.message); }
     } else {
-      // Untuk intraday: ambil D1 dari GoldAPI.io lalu buat candle sintetis
       try{
         setSts('dwt','GoldAPI.io → membangun candle...');
         let daily = cache['1day'];
-        if(!daily){
-          daily = await fetchGoldAPIioHistorical(20);
-          cache['1day'] = daily;
-        }
-        const d = buildIntradayFromDaily(daily, IV_MS[iv]||3600000);
-        // Update harga terakhir dengan spot real-time
-        try{
-          const spot = await fetchGoldAPIioSpot();
-          if(spot.price&&d.length){
-            const last=d[d.length-1];
-            last.c=spot.price;
-            if(spot.high_price>last.h) last.h=spot.high_price;
-            if(spot.low_price<last.l) last.l=spot.low_price;
+        if(!daily){ daily = await fetchGoldAPIioHistorical(20); cache['1day']=daily; }
+        const d_arr = daily.slice(-20);
+        // buat candle sintetis sederhana
+        const result=[];
+        d_arr.forEach(dc=>{
+          const steps=Math.floor(8*3600000/IV_MS[iv]||3600000);
+          const range=dc.h-dc.l;
+          for(let i=0;i<steps;i++){
+            const frac=i/steps;
+            const price=dc.l+range*(0.3+0.4*Math.sin(Math.PI*frac)+(Math.random()-0.5)*0.15);
+            result.push({t:dc.t+Math.floor(i*(IV_MS[iv]||3600000)/1000),o:price*(1+(Math.random()-0.5)*0.0005),h:price*(1+Math.random()*0.001),l:price*(1-Math.random()*0.001),c:price,v:0});
           }
-        }catch(e){}
+        });
+        const d=result.slice(-60);
+        try{const spot=await fetchGoldAPIioSpot();if(spot.price&&d.length){const last=d[d.length-1];last.c=spot.price;if(spot.high_price>last.h)last.h=spot.high_price;if(spot.low_price<last.l)last.l=spot.low_price;}}catch(e){}
         cache[iv]=d; dsrc='GoldAPI.io';
+        setSts('dok','GoldAPI.io ✓ — '+new Date().toLocaleTimeString('id-ID'));
         return d;
       }catch(e3){ console.warn('GoldAPI.io gagal:',e3.message); }
     }
   }
 
-  throw new Error('Semua sumber gagal. Periksa koneksi internet.');
+  setSts('derr','Gagal: Masukkan API Key Twelve Data atau GoldAPI.io');
+  throw new Error('Masukkan API Key. Gunakan Twelve Data (gratis) atau GoldAPI.io.');
 }
 
 // ── CONTROLS ──
