@@ -294,6 +294,58 @@ input:checked+.sldr:before{transform:translateX(16px)}
 .gapi-badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;white-space:nowrap}
 .gapi-badge.ok{background:var(--gbg);color:var(--gn)}.gapi-badge.none{background:var(--bg3);color:var(--text3)}
 .gapi-free{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--gbg);color:var(--gn);font-weight:600;border:1px solid var(--gbd)}
+
+/* ── TRAFFIC LIGHT ENTRY PANEL ── */
+.tl-panel{border-radius:var(--r);border:2px solid;margin-bottom:1rem;overflow:hidden;transition:all .3s}
+.tl-panel.green{border-color:var(--gbd);background:var(--gbg)}
+.tl-panel.yellow{border-color:var(--abd);background:var(--abg)}
+.tl-panel.red{border-color:var(--rbd);background:var(--rbg)}
+.tl-panel.grey{border-color:var(--border);background:var(--bg2)}
+.tl-hdr{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem}
+.tl-left{display:flex;align-items:center;gap:12px}
+.tl-light{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;border:3px solid rgba(0,0,0,.1)}
+.tl-panel.green .tl-light{background:#4CAF50;box-shadow:0 0 16px rgba(76,175,80,.5)}
+.tl-panel.yellow .tl-light{background:#FF9800;box-shadow:0 0 16px rgba(255,152,0,.5)}
+.tl-panel.red .tl-light{background:#f44336;box-shadow:0 0 16px rgba(244,67,54,.5)}
+.tl-panel.grey .tl-light{background:var(--bg3);box-shadow:none}
+.tl-title{font-size:20px;font-weight:800;letter-spacing:.01em}
+.tl-panel.green .tl-title{color:var(--gn)}
+.tl-panel.yellow .tl-title{color:var(--am)}
+.tl-panel.red .tl-title{color:var(--rd)}
+.tl-panel.grey .tl-title{color:var(--text2)}
+.tl-sub{font-size:12px;margin-top:2px;opacity:.85}
+.tl-panel.green .tl-sub{color:var(--gn)}
+.tl-panel.yellow .tl-sub{color:var(--am)}
+.tl-panel.red .tl-sub{color:var(--rd)}
+.tl-panel.grey .tl-sub{color:var(--text2)}
+.tl-score{text-align:right}
+.tl-score-num{font-size:28px;font-weight:800}
+.tl-panel.green .tl-score-num{color:var(--gn)}
+.tl-panel.yellow .tl-score-num{color:var(--am)}
+.tl-panel.red .tl-score-num{color:var(--rd)}
+.tl-panel.grey .tl-score-num{color:var(--text2)}
+.tl-score-lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.tl-body{padding:.5rem 1.125rem .875rem}
+.tl-steps{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:.75rem}
+@media(max-width:480px){.tl-steps{grid-template-columns:1fr}}
+.tl-step{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--rs);background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.07)}
+.tl-step-icon{font-size:15px;flex-shrink:0;width:20px;text-align:center}
+.tl-step-txt{font-size:11px;line-height:1.35}
+.tl-step-name{font-weight:600;color:var(--text)}
+.tl-step-val{color:var(--text2)}
+.tl-step.pass{background:var(--gbg);border-color:var(--gbd)}
+.tl-step.pass .tl-step-name{color:var(--gn)}
+.tl-step.fail{background:var(--rbg);border-color:var(--rbd)}
+.tl-step.fail .tl-step-name{color:var(--rd)}
+.tl-step.warn{background:var(--abg);border-color:var(--abd)}
+.tl-step.warn .tl-step-name{color:var(--am)}
+.tl-action{padding:.75rem 1rem;border-radius:var(--rs);font-size:12px;font-weight:600;line-height:1.6;text-align:center}
+.tl-panel.green .tl-action{background:rgba(99,153,34,.15);color:var(--gn)}
+.tl-panel.yellow .tl-action{background:rgba(186,117,23,.15);color:var(--am)}
+.tl-panel.red .tl-action{background:rgba(226,75,74,.15);color:var(--rd)}
+.tl-panel.grey .tl-action{background:var(--bg3);color:var(--text2)}
+/* M1 timeframe badge */
+.tf-m1{background:var(--abg);color:var(--abd);border-color:var(--abd);font-weight:700}
 </style>
 </head>
 <body>
@@ -332,6 +384,7 @@ input:checked+.sldr:before{transform:translateX(16px)}
 
 <div class="ctrl">
   <div class="tfg">
+    <button class="tf tf-m1" onclick="chTF('1min')">M1</button>
     <button class="tf" onclick="chTF('5min')">M5</button>
     <button class="tf" onclick="chTF('15min')">M15</button>
     <button class="tf" onclick="chTF('30min')">M30</button>
@@ -433,6 +486,30 @@ input:checked+.sldr:before{transform:translateX(16px)}
     <div style="margin-top:.75rem;padding:.625rem .875rem;background:var(--bg2);border-radius:var(--rs);font-size:11px;color:var(--text2);line-height:1.6" id="bk-status">
       Refresh data untuk mendeteksi level breakout.
     </div>
+  </div>
+</div>
+
+
+<!-- TRAFFIC LIGHT ENTRY PANEL -->
+<div class="tl-panel grey" id="tl-panel">
+  <div class="tl-hdr">
+    <div class="tl-left">
+      <div class="tl-light" id="tl-light">⏳</div>
+      <div>
+        <div class="tl-title" id="tl-title">Menunggu Data...</div>
+        <div class="tl-sub" id="tl-sub">Refresh untuk mulai analisis</div>
+      </div>
+    </div>
+    <div class="tl-score">
+      <div class="tl-score-num" id="tl-score-num">—</div>
+      <div class="tl-score-lbl">Skor / 8</div>
+    </div>
+  </div>
+  <div class="tl-body">
+    <div class="tl-steps" id="tl-steps">
+      <div class="tl-step"><span class="tl-step-icon">⏳</span><div class="tl-step-txt"><div class="tl-step-name">Memuat...</div><div class="tl-step-val">—</div></div></div>
+    </div>
+    <div class="tl-action" id="tl-action">Refresh data untuk memulai analisis entry.</div>
   </div>
 </div>
 
@@ -621,7 +698,8 @@ function saveTwelveKey(){
   TWELVE_KEY=key||'';
   if(key){localStorage.setItem('twelve_key',key);if(badge){badge.textContent='✅ Aktif';badge.className='gapi-badge ok';}}
   else{localStorage.removeItem('twelve_key');if(badge){badge.textContent='Belum ada';badge.className='gapi-badge none';}}
-  cache={};loadData();
+  cache={};
+loadData();
 }
 function saveGoldKey(){
   const inp=document.getElementById('goldapi-key-input');
@@ -635,8 +713,8 @@ function saveGoldKey(){
 let cache={}, dsrc='';
 let autoTmr=null, autoCd=null, cdS=0;
 let alog=[], prevAS={}, prevRSI=null, audioCtx=null, logOpen=true, zoneOpen=true, bkOpen=true;
-const HTFM={'5min':'15min','15min':'1h','30min':'4h','1h':'4h','4h':'1day','1day':'1week'};
-const TLBL={'5min':'M5','15min':'M15','30min':'M30','1h':'H1','4h':'H4','1day':'D1','1week':'W1'};
+const HTFM={'1min':'5min','5min':'15min','15min':'1h','30min':'4h','1h':'4h','4h':'1day','1day':'1week'};
+const TLBL={'1min':'M1','5min':'M5','15min':'M15','30min':'M30','1h':'H1','4h':'H4','1day':'D1','1week':'W1'};
 
 // ── AUDIO ──
 function getAC(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
@@ -1169,7 +1247,7 @@ function setSts(cls,txt){document.getElementById('dot').className='dot '+cls;doc
 
 // Map interval dashboard → interval Twelve Data
 const TD_IV_MAP = {
-  '5min':'5min','15min':'15min','30min':'30min',
+  '1min':'1min','5min':'5min','15min':'15min','30min':'30min',
   '1h':'1h','4h':'4h','1day':'1day','1week':'1week'
 };
 
@@ -1237,7 +1315,7 @@ async function fetchGoldAPIioHistorical(days=60){
   return candles.sort((a,b)=>a.t-b.t);
 }
 
-const IV_MS = {'5min':300000,'15min':900000,'30min':1800000,'1h':3600000,'4h':14400000,'1day':86400000,'1week':604800000};
+const IV_MS = {'1min':60000,'5min':300000,'15min':900000,'30min':1800000,'1h':3600000,'4h':14400000,'1day':86400000,'1week':604800000};
 
 async function getC(iv){
   if(cache[iv]) return cache[iv];
@@ -1313,9 +1391,9 @@ function togI(x){
 }
 function togAuto(on){
   clearInterval(autoTmr);clearInterval(autoCd);document.getElementById('acd').textContent='';
-  if(!on)return;cdS=60;document.getElementById('acd').textContent=cdS+'s';
-  autoCd=setInterval(()=>{cdS--;document.getElementById('acd').textContent=cdS+'s';if(cdS<=0)cdS=60},1000);
-  autoTmr=setInterval(()=>{cache={};loadData();cdS=60},60000);
+  if(!on)return;cdS=(['1min','5min','15min'].includes(ctf))?15:60;document.getElementById('acd').textContent=cdS+'s';
+  autoCd=setInterval(()=>{cdS--;document.getElementById('acd').textContent=cdS+'s';if(cdS<=0)cdS=(['1min','5min','15min'].includes(ctf))?15:60},1000);
+  const rfMs=(['1min','5min','15min'].includes(ctf))?15000:60000;autoTmr=setInterval(()=>{cache={};loadData();cdS=Math.floor(rfMs/1000)},rfMs);
 }
 
 // ── RENDER ──
@@ -1388,6 +1466,9 @@ function render(){
   // MTF Confluence & Volume
   renderMTF();
   analyzeVolume(ltfC, ctf);
+
+  // Traffic Light Entry Panel
+  renderTrafficLight(ltfC, htfC, lRSI, ltf, htf, obs, fvgs, bkLevels, lE20, lE50, BB, lastC);
 }
 
 // ── ATR ──
@@ -2121,6 +2202,131 @@ function formatAIText(t){
     .replace(/\n\n/g,'<br><br>')
     .replace(/\n/g,'<br>');
 }
+
+loadData();
+
+// ── TRAFFIC LIGHT ENTRY PANEL ──
+function renderTrafficLight(ltfC, htfC, rsi, ltf, htf, obs, fvgs, bkLevels, e20, e50, BB, price){
+  const panel=document.getElementById('tl-panel');
+  const lightEl=document.getElementById('tl-light');
+  const titleEl=document.getElementById('tl-title');
+  const subEl=document.getElementById('tl-sub');
+  const scoreEl=document.getElementById('tl-score-num');
+  const stepsEl=document.getElementById('tl-steps');
+  const actionEl=document.getElementById('tl-action');
+
+  if(!ltfC||ltfC.length<5){return;}
+
+  const last=ltfC[ltfC.length-1];
+  const prev=ltfC[ltfC.length-2];
+  const bullCandle=last.c>last.o;
+  const htfLast=htfC&&htfC.length?htfC[htfC.length-1]:last;
+  const htfBull=htfLast.c>htfLast.o;
+
+  // EMA trend
+  const emaTrend = e20&&e50 ? (e20>e50?'bull':'bear') : 'neut';
+
+  // BB position
+  const lBBU=BB.u[BB.u.length-1], lBBL=BB.l[BB.l.length-1], lBBM=BB.md[BB.md.length-1];
+  const bbPct=lBBU&&lBBL?((price-lBBL)/(lBBU-lBBL)*100):50;
+
+  // Market structure from HTF
+  const htfStruct = marketStructure(htfC&&htfC.length>5?htfC:ltfC);
+
+  // Active OB check
+  const bullOB=obs.filter(o=>o.fresh&&o.type==='bull');
+  const bearOB=obs.filter(o=>o.fresh&&o.type==='bear');
+  const inBullOB=bullOB.some(o=>price>=o.lo&&price<=o.hi);
+  const inBearOB=bearOB.some(o=>price>=o.lo&&price<=o.hi);
+
+  // Active FVG check
+  const bullFVG=fvgs.filter(f=>f.type==='bull');
+  const bearFVG=fvgs.filter(f=>f.type==='bear');
+  const inBullFVG=bullFVG.some(f=>price>=f.bot&&price<=f.top);
+  const inBearFVG=bearFVG.some(f=>price>=f.bot&&price<=f.top);
+
+  // Volume check
+  const vols=ltfC.slice(-20).map(c=>c.v).filter(v=>v>0);
+  const avgVol=vols.length?vols.reduce((a,b)=>a+b,0)/vols.length:0;
+  const volOk=avgVol===0||(last.v>=avgVol*1.2);
+
+  // Candle pattern
+  const bd=Math.abs(last.c-last.o), rng=last.h-last.l||1;
+  const uw=last.h-Math.max(last.o,last.c), lw=Math.min(last.o,last.c)-last.l;
+  const isBullPat=bullCandle&&(bd/rng>0.5||(lw/rng>0.5&&bd/rng>0.2));
+  const isBearPat=!bullCandle&&(bd/rng>0.5||(uw/rng>0.5&&bd/rng>0.2));
+
+  // MTF score
+  const mtfEl=document.getElementById('mtf-score-num');
+  const mtfScore=mtfEl?parseInt(mtfEl.textContent)||0:0;
+  const mtfBull=mtfScore>=60;
+  const mtfBear=mtfScore<=40;
+
+  // ── BUILD BUY CHECKLIST ──
+  const buyChecks=[
+    {name:'Trend HTF Bullish', val:TLBL[htf]+': '+(htfBull?'✅ Bullish':'❌ Bearish'), pass:htfBull, icon:'📈'},
+    {name:'EMA Bullish', val:e20&&e50?'EMA20 '+(e20>e50?'> ✅':'< ❌')+' EMA50':'—', pass:emaTrend==='bull', icon:'〽️'},
+    {name:'RSI Normal (30-70)', val:'RSI '+rsi.toFixed(1), pass:rsi>=30&&rsi<=70, warn:rsi<30, icon:'📊'},
+    {name:'BB Posisi Bawah/Tengah', val:bbPct.toFixed(0)+'% dari BB', pass:bbPct<=65, icon:'🎯'},
+    {name:'Candle Bullish', val:bullCandle?'✅ Candle Hijau':'❌ Candle Merah', pass:bullCandle&&isBullPat, icon:'🕯️'},
+    {name:'Di Area OB/FVG Bull', val:inBullOB?'✅ Di Bull OB':inBullFVG?'✅ Di Bull FVG':'❌ Di Luar Zona', pass:inBullOB||inBullFVG, icon:'🟢'},
+    {name:'MTF Confluence Bull', val:mtfScore+'% sepakat', pass:mtfBull, icon:'🔭'},
+    {name:'Volume Cukup', val:avgVol>0?(volOk?'✅ Volume OK':'⚠️ Volume Lemah'):'—', pass:volOk||avgVol===0, warn:!volOk&&avgVol>0, icon:'📦'},
+  ];
+
+  // ── BUILD SELL CHECKLIST ──
+  const sellChecks=[
+    {name:'Trend HTF Bearish', val:TLBL[htf]+': '+(!htfBull?'✅ Bearish':'❌ Bullish'), pass:!htfBull, icon:'📉'},
+    {name:'EMA Bearish', val:e20&&e50?'EMA20 '+(e20<e50?'< ✅':'> ❌')+' EMA50':'—', pass:emaTrend==='bear', icon:'〽️'},
+    {name:'RSI Normal (30-70)', val:'RSI '+rsi.toFixed(1), pass:rsi>=30&&rsi<=70, warn:rsi>70, icon:'📊'},
+    {name:'BB Posisi Atas/Tengah', val:bbPct.toFixed(0)+'% dari BB', pass:bbPct>=35, icon:'🎯'},
+    {name:'Candle Bearish', val:!bullCandle?'✅ Candle Merah':'❌ Candle Hijau', pass:!bullCandle&&isBearPat, icon:'🕯️'},
+    {name:'Di Area OB/FVG Bear', val:inBearOB?'✅ Di Bear OB':inBearFVG?'✅ Di Bear FVG':'❌ Di Luar Zona', pass:inBearOB||inBearFVG, icon:'🔴'},
+    {name:'MTF Confluence Bear', val:mtfScore+'% sepakat', pass:mtfBear, icon:'🔭'},
+    {name:'Volume Cukup', val:avgVol>0?(volOk?'✅ Volume OK':'⚠️ Volume Lemah'):'—', pass:volOk||avgVol===0, warn:!volOk&&avgVol>0, icon:'📦'},
+  ];
+
+  const buyScore=buyChecks.filter(c=>c.pass).length;
+  const sellScore=sellChecks.filter(c=>c.pass).length;
+
+  let mode, checks, score, cls, light, title, sub, action;
+
+  if(buyScore>=5 && buyScore>sellScore){
+    mode='buy'; checks=buyChecks; score=buyScore; cls='green';
+    light='🟢'; title='🚀 BOLEH ENTRY BUY'; sub='Konfirmasi cukup kuat untuk posisi LONG';
+    action=`✅ Semua kondisi terpenuhi ${score}/8. Gunakan harga Entry dari Smart Entry Signal di bawah. Pasang SL & TP sesuai level yang tersedia. Tunggu candle CLOSE konfirmasi sebelum entry.`;
+  } else if(sellScore>=5 && sellScore>buyScore){
+    mode='sell'; checks=sellChecks; score=sellScore; cls='red';
+    light='🔴'; title='📉 BOLEH ENTRY SELL'; sub='Konfirmasi cukup kuat untuk posisi SHORT';
+    action=`✅ Semua kondisi terpenuhi ${score}/8. Gunakan harga Entry dari Smart Entry Signal di bawah. Pasang SL & TP sesuai level yang tersedia. Tunggu candle CLOSE konfirmasi sebelum entry.`;
+  } else if(buyScore>=3||sellScore>=3){
+    const dominant=buyScore>=sellScore?'BUY':'SELL';
+    checks=buyScore>=sellScore?buyChecks:sellChecks;
+    score=Math.max(buyScore,sellScore); cls='yellow';
+    light='🟡'; title='⏳ TUNGGU KONFIRMASI';
+    sub=`Sinyal ${dominant} mulai terbentuk, belum cukup kuat`;
+    action=`⚠️ Baru ${score}/8 kondisi terpenuhi. Butuh minimal 5/8 untuk entry. Tunggu konfirmasi tambahan: candle berikutnya, atau harga masuk zona OB/FVG, atau MTF lebih sepakat.`;
+  } else {
+    checks=buyScore>=sellScore?buyChecks:sellChecks;
+    score=Math.max(buyScore,sellScore); cls='grey';
+    light='⚫'; title='🚫 JANGAN ENTRY';
+    sub='Kondisi pasar tidak mendukung untuk entry sekarang';
+    action=`❌ Hanya ${score}/8 kondisi terpenuhi. Pasar sedang konsolidasi atau arah tidak jelas. Sabar dan tunggu setup yang lebih jelas. Jangan FOMO!`;
+  }
+
+  panel.className='tl-panel '+cls;
+  lightEl.textContent=light;
+  titleEl.textContent=title;
+  subEl.textContent=sub;
+  scoreEl.textContent=score+'/8';
+  actionEl.textContent=action;
+
+  stepsEl.innerHTML=checks.map(c=>{
+    const st=c.pass?'pass':(c.warn?'warn':'fail');
+    return`<div class="tl-step ${st}"><span class="tl-step-icon">${c.icon}</span><div class="tl-step-txt"><div class="tl-step-name">${c.name}</div><div class="tl-step-val">${c.val}</div></div></div>`;
+  }).join('');
+}
+
 
 loadData();
 </script>
