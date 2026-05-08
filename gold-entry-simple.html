@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Entry Dashboard — 3 Konfirmasi</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0e0c;--bg2:#1a1917;--bg3:#242220;
+  --card:#1e1c1a;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.16);
+  --text:#f0ede8;--text2:#9c9a92;--text3:#6b6a64;
+  --gold:#D4A843;--gold2:#BA7517;--goldbg:rgba(212,168,67,.08);
+  --gn:#7DC831;--gbg:rgba(125,200,49,.1);--gbd:#5A9A20;
+  --rd:#F05050;--rbg:rgba(240,80,80,.1);--rbd:#C03030;
+  --am:#F0A030;--abg:rgba(240,160,48,.1);--abd:#C07020;
+  --font:-apple-system,'Segoe UI',sans-serif;
+  --r:14px;--rs:10px
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding:0}
+
+/* ── HEADER ── */
+.hdr{
+  background:linear-gradient(135deg,#1a1917 0%,#0f0e0c 100%);
+  border-bottom:1px solid var(--border);
+  padding:1.25rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+}
+.hdr-left{display:flex;align-items:center;gap:14px}
+.logo{
+  width:44px;height:44px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;box-shadow:0 4px 20px rgba(212,168,67,.3)
+}
+.title-block h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.title-block p{font-size:12px;color:var(--text2);margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.price-badge{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--rs);padding:.4rem .9rem;
+  display:flex;flex-direction:column;align-items:flex-end
+}
+.price-val{font-size:24px;font-weight:700;color:var(--gold);letter-spacing:-.5px}
+.price-chg{font-size:12px;font-weight:500}
+.price-chg.up{color:var(--gn)}.price-chg.dn{color:var(--rd)}
+.dot-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dok{background:var(--gn)}.dwt{background:var(--am)}.derr{background:var(--rd)}
+.refresh-btn{
+  padding:.45rem 1rem;background:var(--gold2);color:#fff;
+  border:none;border-radius:var(--rs);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .15s;font-family:var(--font)
+}
+.refresh-btn:hover{background:var(--gold);transform:translateY(-1px)}
+.refresh-btn:active{transform:scale(.97)}
+
+/* ── MAIN LAYOUT ── */
+.main{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}
+
+/* ── KEY INPUT ── */
+.key-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.125rem 1.5rem;
+  margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap
+}
+.key-card label{font-size:13px;color:var(--text2);white-space:nowrap}
+.key-input{
+  flex:1;min-width:200px;padding:.45rem .875rem;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--rs);color:var(--text);font-size:13px;font-family:var(--font);
+  outline:none
+}
+.key-input:focus{border-color:var(--gold2)}
+.key-btn{
+  padding:.45rem 1rem;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--rs);color:var(--text);font-size:13px;cursor:pointer;
+  font-family:var(--font);transition:all .15s;white-space:nowrap
+}
+.key-btn:hover{background:var(--bg2)}
+.key-hint{font-size:11px;color:var(--text3);line-height:1.5}
+.key-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+.key-badge.ok{background:var(--gbg);color:var(--gn)}
+.key-badge.none{background:var(--bg3);color:var(--text3)}
+
+/* ── TF SELECTOR ── */
+.tf-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:.75rem 1.25rem;
+  margin-bottom:1.5rem;flex-wrap:wrap
+}
+.tf-label{font-size:12px;color:var(--text2);font-weight:500;margin-right:4px}
+.tf-btn{
+  padding:.4rem .875rem;background:transparent;border:1px solid var(--border);
+  border-radius:var(--rs);font-size:13px;cursor:pointer;color:var(--text2);
+  font-family:var(--font);transition:all .15s;font-weight:500
+}
+.tf-btn:hover{background:var(--bg3);color:var(--text)}
+.tf-btn.on{background:var(--gold2);border-color:var(--gold2);color:#fff;font-weight:700}
+.tf-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.auto-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);margin-left:auto}
+.tgl{position:relative;width:34px;height:18px;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0}
+.sldr{position:absolute;inset:0;background:var(--bg3);border-radius:20px;cursor:pointer;transition:.2s}
+.sldr:before{content:'';position:absolute;width:12px;height:12px;background:#fff;border-radius:50%;left:3px;top:3px;transition:.2s}
+input:checked+.sldr{background:var(--gold2)}
+input:checked+.sldr:before{transform:translateX(16px)}
+#acd{font-size:11px;color:var(--text3);min-width:24px}
+
+/* ── SESSION INDICATOR ── */
+.session-bar{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:.75rem 1.5rem;
+  margin-bottom:1.5rem;display:flex;align-items:center;gap:16px;flex-wrap:wrap
+}
+.session-item{display:flex;align-items:center;gap:8px;font-size:13px}
+.session-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.session-dot.active{background:var(--gn);box-shadow:0 0 8px rgba(125,200,49,.5);animation:pulse 2s infinite}
+.session-dot.inactive{background:var(--bg3)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.session-name{font-weight:600}
+.session-time{color:var(--text2)}
+.session-status{font-size:12px;padding:2px 8px;border-radius:20px;font-weight:600}
+.session-status.on{background:var(--gbg);color:var(--gn)}
+.session-status.off{background:var(--bg3);color:var(--text3)}
+.session-tip{margin-left:auto;font-size:12px;color:var(--text2);font-style:italic}
+
+/* ── BIG DECISION CARD ── */
+.decision-card{
+  border-radius:var(--r);border:2px solid;
+  margin-bottom:1.75rem;overflow:hidden;
+  transition:all .3s
+}
+.decision-card.buy{border-color:var(--gbd);background:linear-gradient(135deg,rgba(125,200,49,.06),rgba(125,200,49,.02))}
+.decision-card.sell{border-color:var(--rbd);background:linear-gradient(135deg,rgba(240,80,80,.06),rgba(240,80,80,.02))}
+.decision-card.wait{border-color:var(--abd);background:linear-gradient(135deg,rgba(240,160,48,.06),rgba(240,160,48,.02))}
+.decision-card.off{border-color:var(--border);background:var(--card)}
+.decision-hdr{
+  padding:1.5rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px
+}
+.decision-signal{display:flex;align-items:center;gap:16px}
+.decision-icon{font-size:52px;line-height:1;filter:drop-shadow(0 2px 12px currentColor)}
+.decision-text{}
+.decision-label{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1}
+.buy .decision-label{color:var(--gn)}
+.sell .decision-label{color:var(--rd)}
+.wait .decision-label{color:var(--am)}
+.off .decision-label{color:var(--text2)}
+.decision-sub{font-size:14px;margin-top:4px}
+.buy .decision-sub{color:var(--gn)}
+.sell .decision-sub{color:var(--rd)}
+.wait .decision-sub{color:var(--am)}
+.off .decision-sub{color:var(--text3)}
+.decision-score{text-align:right}
+.score-circle{
+  width:80px;height:80px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:3px solid;font-weight:700
+}
+.buy .score-circle{border-color:var(--gbd);background:var(--gbg)}
+.sell .score-circle{border-color:var(--rbd);background:var(--rbg)}
+.wait .score-circle{border-color:var(--abd);background:var(--abg)}
+.off .score-circle{border-color:var(--border);background:var(--bg3)}
+.score-num{font-size:22px;font-weight:800;line-height:1}
+.buy .score-num{color:var(--gn)}.sell .score-num{color:var(--rd)}.wait .score-num{color:var(--am)}.off .score-num{color:var(--text2)}
+.score-lbl{font-size:10px;color:var(--text2);margin-top:1px;text-transform:uppercase}
+.decision-action{padding:1rem 2rem;font-size:14px;line-height:1.7;color:var(--text2)}
+.buy .decision-action{color:var(--gn);opacity:.85}
+.sell .decision-action{color:var(--rd);opacity:.85}
+
+/* ── 3-BLOCK GRID ── */
+.three-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;margin-bottom:1.75rem}
+@media(max-width:900px){.three-grid{grid-template-columns:1fr}}
+
+/* ── CONFIRM BLOCK ── */
+.confirm-block{
+  border-radius:var(--r);border:2px solid;
+  overflow:hidden;transition:all .3s
+}
+.confirm-block.pass{border-color:var(--gbd);background:linear-gradient(180deg,rgba(125,200,49,.07),rgba(125,200,49,.02))}
+.confirm-block.warn{border-color:var(--abd);background:linear-gradient(180deg,rgba(240,160,48,.07),rgba(240,160,48,.02))}
+.confirm-block.fail{border-color:var(--rbd);background:linear-gradient(180deg,rgba(240,80,80,.07),rgba(240,80,80,.02))}
+.confirm-block.loading{border-color:var(--border);background:var(--card)}
+.cb-header{padding:1.125rem 1.5rem;border-bottom:1px solid var(--border)}
+.cb-num{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.pass .cb-num{color:var(--gbd)}.warn .cb-num{color:var(--abd)}.fail .cb-num{color:var(--rbd)}.loading .cb-num{color:var(--text3)}
+.cb-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.cb-status-row{display:flex;align-items:center;gap:8px}
+.cb-icon{font-size:28px;line-height:1}
+.cb-state{font-size:16px;font-weight:700}
+.pass .cb-state{color:var(--gn)}.warn .cb-state{color:var(--am)}.fail .cb-state{color:var(--rd)}.loading .cb-state{color:var(--text2)}
+.cb-body{padding:1rem 1.5rem}
+.cb-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:13px;gap:8px
+}
+.cb-row:last-child{border-bottom:none}
+.cb-row-label{color:var(--text2)}
+.cb-row-val{font-weight:600;text-align:right}
+.cb-row-val.up{color:var(--gn)}.cb-row-val.dn{color:var(--rd)}.cb-row-val.neutral{color:var(--am)}.cb-row-val.ok{color:var(--gn)}
+.cb-badge{
+  display:inline-block;font-size:11px;padding:2px 9px;
+  border-radius:20px;font-weight:700;margin-top:.5rem
+}
+.cb-badge.pass{background:var(--gbg);color:var(--gn)}
+.cb-badge.fail{background:var(--rbg);color:var(--rd)}
+.cb-badge.warn{background:var(--abg);color:var(--am)}
+
+/* ── ENTRY LEVELS ── */
+.levels-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);margin-bottom:1.75rem;overflow:hidden
+}
+.levels-hdr{
+  padding:1rem 1.5rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between
+}
+.levels-title{font-size:16px;font-weight:700}
+.levels-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border)}
+@media(max-width:900px){.levels-grid{grid-template-columns:1fr 1fr}}
+.level-item{background:var(--card);padding:1rem 1.25rem;text-align:center}
+.level-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:6px}
+.level-val{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.level-val.entry{color:var(--gold)}
+.level-val.sl{color:var(--rd)}
+.level-val.tp{color:var(--gn)}
+.level-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.level-rr{font-size:11px;color:var(--am);margin-top:2px;font-weight:600}
+
+/* ── SESSION CLOCK ── */
+.clock-strip{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:1rem 1.5rem;
+  margin-bottom:1.75rem;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px
+}
+.clock-left{display:flex;align-items:center;gap:12px}
+.clock-time{font-size:28px;font-weight:800;letter-spacing:-1px;color:var(--gold)}
+.clock-date{font-size:12px;color:var(--text2)}
+.clock-sessions{display:flex;gap:16px;flex-wrap:wrap}
+.csess{
+  display:flex;flex-direction:column;align-items:center;
+  padding:.5rem .875rem;border-radius:var(--rs);border:1px solid
+}
+.csess.on{border-color:var(--gbd);background:var(--gbg)}
+.csess.off{border-color:var(--border);background:var(--bg3)}
+.csess-name{font-size:12px;font-weight:700}
+.csess.on .csess-name{color:var(--gn)}.csess.off .csess-name{color:var(--text3)}
+.csess-time{font-size:11px;color:var(--text2);margin-top:2px}
+.csess-badge{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700;margin-top:4px}
+.csess.on .csess-badge{background:var(--gn);color:#000}.csess.off .csess-badge{background:var(--bg2);color:var(--text3)}
+
+/* ── RULE REMINDER ── */
+.rules-card{
+  background:var(--goldbg);border:1px solid rgba(212,168,67,.2);
+  border-radius:var(--r);padding:1.125rem 1.5rem;
+  margin-bottom:1.75rem
+}
+.rules-title{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:.75rem;display:flex;align-items:center;gap:7px}
+.rules-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:700px){.rules-grid{grid-template-columns:1fr}}
+.rule-item{background:rgba(0,0,0,.2);border-radius:var(--rs);padding:.7rem 1rem;font-size:12px;color:var(--text2);line-height:1.6}
+.rule-item strong{color:var(--gold);display:block;margin-bottom:3px}
+
+/* ── JOURNAL SECTION ── */
+.journal-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;margin-bottom:1.5rem
+}
+.journal-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.875rem 1.5rem;border-bottom:1px solid var(--border);cursor:pointer
+}
+.journal-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.journal-body{padding:1.25rem 1.5rem;display:none}
+.journal-body.open{display:block}
+.journal-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:700px){.journal-form{grid-template-columns:1fr}}
+.jf-group{display:flex;flex-direction:column;gap:5px}
+.jf-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.jf-input,.jf-select{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--rs);padding:.45rem .75rem;
+  color:var(--text);font-size:13px;font-family:var(--font);outline:none;
+  width:100%
+}
+.jf-input:focus,.jf-select:focus{border-color:var(--gold2)}
+.jf-select option{background:var(--bg2)}
+.jf-wide{grid-column:1/-1}
+.jf-btn-row{grid-column:1/-1;display:flex;gap:8px;margin-top:4px}
+.jf-save{
+  padding:.55rem 1.25rem;background:var(--gold2);color:#fff;
+  border:none;border-radius:var(--rs);font-size:13px;font-weight:600;
+  cursor:pointer;font-family:var(--font)
+}
+.jf-save:hover{background:var(--gold)}
+.jf-clear{
+  padding:.55rem 1rem;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--rs);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font)
+}
+.journal-list{margin-top:1.25rem}
+.journal-empty{font-size:12px;color:var(--text3);text-align:center;padding:1rem 0;font-style:italic}
+.jtrade{
+  background:var(--bg3);border-radius:var(--rs);padding:.75rem 1rem;
+  margin-bottom:8px;font-size:12px;border-left:3px solid
+}
+.jtrade.profit{border-color:var(--gn)}.jtrade.loss{border-color:var(--rd)}.jtrade.be{border-color:var(--am)}
+.jtrade-row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.jtrade-field{display:flex;flex-direction:column;gap:2px}
+.jtrade-field-lbl{font-size:10px;color:var(--text3);text-transform:uppercase}
+.jtrade-field-val{font-weight:600}
+.jtrade.profit .jtrade-result{color:var(--gn)}
+.jtrade.loss .jtrade-result{color:var(--rd)}
+.jtrade.be .jtrade-result{color:var(--am)}
+.jstat-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+  background:var(--bg3);border-radius:var(--rs);padding:.875rem 1rem;
+  margin-bottom:1rem;font-size:12px
+}
+@media(max-width:600px){.jstat-row{grid-template-columns:1fr 1fr}}
+.jstat{display:flex;flex-direction:column;gap:3px;align-items:center}
+.jstat-num{font-size:20px;font-weight:700}
+.jstat-lbl{font-size:10px;color:var(--text2);text-transform:uppercase}
+
+/* ── FOOTER ── */
+.foot{
+  text-align:center;font-size:11px;color:var(--text3);
+  padding:1.25rem 2rem;border-top:1px solid var(--border);
+  line-height:1.8
+}
+
+/* ── TOAST ── */
+.twrap{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:var(--r);padding:.75rem 1rem;
+  min-width:250px;max-width:320px;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  pointer-events:auto;animation:sIn .3s ease
+}
+.toast.buy-t{border-left:4px solid var(--gbd)}.toast.sell-t{border-left:4px solid var(--rbd)}
+.toast.warn-t{border-left:4px solid var(--abd)}
+.tth{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.ttl{font-size:13px;font-weight:700}
+.buy-t .ttl{color:var(--gn)}.sell-t .ttl{color:var(--rd)}.warn-t .ttl{color:var(--am)}
+.tcl{background:none;border:none;cursor:pointer;font-size:16px;color:var(--text2);padding:0}
+.tbd{font-size:12px;color:var(--text2);line-height:1.5}
+.ttm{font-size:10px;color:var(--text3);margin-top:3px}
+@keyframes sIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="twrap" id="twrap"></div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="logo">🥇</div>
+    <div class="title-block">
+      <h1>Gold Entry Dashboard</h1>
+      <p>3 Konfirmasi Wajib — H4+H1 Searah · Traffic Light · Retest</p>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="dot-status"><span class="dot dwt" id="dot"></span><span id="stxt">Menunggu...</span></div>
+    <div class="price-badge">
+      <div class="price-val" id="price-val">$—</div>
+      <div class="price-chg" id="price-chg">—</div>
+    </div>
+    <button class="refresh-btn" onclick="loadData()">⟳ Refresh</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- API KEY -->
+  <div class="key-card">
+    <label>🔑 Twelve Data API Key:</label>
+    <input class="key-input" id="td-key" type="password" placeholder="Masukkan Twelve Data API Key (gratis di twelvedata.com)">
+    <button class="key-btn" onclick="saveKey()">Simpan</button>
+    <span class="key-badge none" id="key-badge">Belum diisi</span>
+    <div class="key-hint">Gratis 800 req/hari · <a href="https://twelvedata.com" target="_blank" style="color:var(--gold2)">Daftar di twelvedata.com</a></div>
+  </div>
+
+  <!-- TIMEFRAME SELECTOR -->
+  <div class="tf-bar">
+    <span class="tf-label">Entry TF:</span>
+    <button class="tf-btn" onclick="chTF('5min')" id="tf-5min">M5</button>
+    <button class="tf-btn" onclick="chTF('15min')" id="tf-15min">M15</button>
+    <button class="tf-btn on" onclick="chTF('30min')" id="tf-30min">M30</button>
+    <button class="tf-btn" onclick="chTF('1h')" id="tf-1h">H1</button>
+    <div class="tf-sep"></div>
+    <button class="tf-btn" onclick="chTF('4h')" id="tf-4h">H4</button>
+    <div class="tf-sep"></div>
+    <label class="auto-check">
+      Auto Refresh
+      <label class="tgl"><input type="checkbox" id="auto-chk" onchange="togAuto(this.checked)"><span class="sldr"></span></label>
+      <span id="acd"></span>
+    </label>
+  </div>
+
+  <!-- SESSION CLOCK -->
+  <div class="clock-strip">
+    <div class="clock-left">
+      <div>
+        <div class="clock-time" id="wib-time">--:--:--</div>
+        <div class="clock-date" id="wib-date">WIB (UTC+7)</div>
+      </div>
+    </div>
+    <div class="clock-sessions">
+      <div class="csess" id="sess-tokyo">
+        <div class="csess-name">Tokyo</div>
+        <div class="csess-time">06:00–15:00</div>
+        <div class="csess-badge" id="sess-tokyo-badge">–</div>
+      </div>
+      <div class="csess" id="sess-london">
+        <div class="csess-name">🇬🇧 London</div>
+        <div class="csess-time">14:00–23:00</div>
+        <div class="csess-badge" id="sess-london-badge">–</div>
+      </div>
+      <div class="csess" id="sess-ny">
+        <div class="csess-name">🇺🇸 New York</div>
+        <div class="csess-time">19:00–04:00</div>
+        <div class="csess-badge" id="sess-ny-badge">–</div>
+      </div>
+    </div>
+    <div id="sess-tip" style="font-size:13px;color:var(--text2);font-style:italic;padding:.5rem .875rem;background:var(--bg3);border-radius:var(--rs)">
+      🕐 Memuat sesi...
+    </div>
+  </div>
+
+  <!-- BIG DECISION CARD -->
+  <div class="decision-card off" id="decision-card">
+    <div class="decision-hdr">
+      <div class="decision-signal">
+        <div class="decision-icon" id="decision-icon">⏳</div>
+        <div class="decision-text">
+          <div class="decision-label" id="decision-label">Menunggu Data</div>
+          <div class="decision-sub" id="decision-sub">Masukkan API key dan refresh untuk mulai analisis</div>
+        </div>
+      </div>
+      <div class="decision-score">
+        <div class="score-circle" id="score-circle">
+          <div class="score-num" id="score-num">—</div>
+          <div class="score-lbl">dari 3</div>
+        </div>
+      </div>
+    </div>
+    <div class="decision-action" id="decision-action">
+      Refresh data untuk mendapatkan sinyal entry.
+    </div>
+  </div>
+
+  <!-- 3 KONFIRMASI BLOK -->
+  <div class="three-grid">
+
+    <!-- BLOK 1: H4 + H1 SEARAH -->
+    <div class="confirm-block loading" id="blok1">
+      <div class="cb-header">
+        <div class="cb-num">Konfirmasi #1</div>
+        <div class="cb-title">H4 + H1 Searah</div>
+        <div class="cb-status-row" style="margin-top:8px">
+          <div class="cb-icon" id="b1-icon">⏳</div>
+          <div class="cb-state" id="b1-state">Memuat...</div>
+        </div>
+      </div>
+      <div class="cb-body">
+        <div class="cb-row">
+          <span class="cb-row-label">H4 Bias</span>
+          <span class="cb-row-val" id="b1-h4">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">H1 Bias</span>
+          <span class="cb-row-val" id="b1-h1">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">EMA20 vs EMA50</span>
+          <span class="cb-row-val" id="b1-ema">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Market Structure</span>
+          <span class="cb-row-val" id="b1-struct">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Kesimpulan</span>
+          <span class="cb-row-val" id="b1-conc">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOK 2: TRAFFIC LIGHT -->
+    <div class="confirm-block loading" id="blok2">
+      <div class="cb-header">
+        <div class="cb-num">Konfirmasi #2</div>
+        <div class="cb-title">Traffic Light</div>
+        <div class="cb-status-row" style="margin-top:8px">
+          <div class="cb-icon" id="b2-icon">⏳</div>
+          <div class="cb-state" id="b2-state">Memuat...</div>
+        </div>
+      </div>
+      <div class="cb-body">
+        <div class="cb-row">
+          <span class="cb-row-label">RSI (30–70)</span>
+          <span class="cb-row-val" id="b2-rsi">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">BB Position</span>
+          <span class="cb-row-val" id="b2-bb">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Candle Pattern</span>
+          <span class="cb-row-val" id="b2-candle">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Volume</span>
+          <span class="cb-row-val" id="b2-vol">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Skor Lampu</span>
+          <span class="cb-row-val" id="b2-score">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOK 3: RETEST STATUS -->
+    <div class="confirm-block loading" id="blok3">
+      <div class="cb-header">
+        <div class="cb-num">Konfirmasi #3</div>
+        <div class="cb-title">Retest + Konfirmasi</div>
+        <div class="cb-status-row" style="margin-top:8px">
+          <div class="cb-icon" id="b3-icon">⏳</div>
+          <div class="cb-state" id="b3-state">Memuat...</div>
+        </div>
+      </div>
+      <div class="cb-body">
+        <div class="cb-row">
+          <span class="cb-row-label">Level Terdekat</span>
+          <span class="cb-row-val" id="b3-level">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Jarak ke Level</span>
+          <span class="cb-row-val" id="b3-dist">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Status Retest</span>
+          <span class="cb-row-val" id="b3-retest">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Candle Konfirmasi</span>
+          <span class="cb-row-val" id="b3-candle">—</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-row-label">Bull/Bear OB/FVG</span>
+          <span class="cb-row-val" id="b3-zone">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ENTRY LEVELS -->
+  <div class="levels-card">
+    <div class="levels-hdr">
+      <div class="levels-title">📐 Level Entry, SL & TP</div>
+      <div style="font-size:12px;color:var(--text2)" id="levels-note">Refresh untuk kalkulasi otomatis</div>
+    </div>
+    <div class="levels-grid">
+      <div class="level-item">
+        <div class="level-lbl">🎯 Entry Price</div>
+        <div class="level-val entry" id="lv-entry">$—</div>
+        <div class="level-sub" id="lv-entry-sub">—</div>
+      </div>
+      <div class="level-item">
+        <div class="level-lbl">🛑 Stop Loss</div>
+        <div class="level-val sl" id="lv-sl">$—</div>
+        <div class="level-sub" id="lv-sl-sub">—</div>
+      </div>
+      <div class="level-item">
+        <div class="level-lbl">🎯 Target 1 (TP1)</div>
+        <div class="level-val tp" id="lv-tp1">$—</div>
+        <div class="level-sub" id="lv-tp1-sub">—</div>
+        <div class="level-rr" id="lv-tp1-rr">RR —</div>
+      </div>
+      <div class="level-item">
+        <div class="level-lbl">🎯 Target 2 (TP2)</div>
+        <div class="level-val tp" id="lv-tp2">$—</div>
+        <div class="level-sub" id="lv-tp2-sub">—</div>
+        <div class="level-rr" id="lv-tp2-rr">RR —</div>
+      </div>
+      <div class="level-item">
+        <div class="level-lbl">🎯 Target 3 (TP3)</div>
+        <div class="level-val tp" id="lv-tp3">$—</div>
+        <div class="level-sub" id="lv-tp3-sub">—</div>
+        <div class="level-rr" id="lv-tp3-rr">RR —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATURAN 3 KONFIRMASI REMINDER -->
+  <div class="rules-card">
+    <div class="rules-title">📋 Aturan Entry Simpel — 3 Wajib Hijau</div>
+    <div class="rules-grid">
+      <div class="rule-item">
+        <strong>✅ #1 — H4 + H1 Searah</strong>
+        Kedua timeframe harus menunjukkan bias yang sama (dua-duanya Bullish atau dua-duanya Bearish). Kalau konflik, jangan entry.
+      </div>
+      <div class="rule-item">
+        <strong>✅ #2 — Traffic Light ≥ 3/4</strong>
+        RSI normal, BB tidak ekstrem, candle mendukung, volume cukup. Butuh minimal 3 dari 4 faktor hijau.
+      </div>
+      <div class="rule-item">
+        <strong>✅ #3 — Retest + Konfirmasi</strong>
+        Harga sudah menyentuh zona (OB/FVG/level) dan candle konfirmasi sudah close. Jangan masuk sebelum candle close!
+      </div>
+    </div>
+  </div>
+
+  <!-- JOURNAL TRADING -->
+  <div class="journal-card">
+    <div class="journal-hdr" onclick="togJournal()">
+      <div class="journal-title">📓 Jurnal Trading <span id="jtrade-count" style="font-size:12px;font-weight:400;color:var(--text2)">(0 trade)</span></div>
+      <span id="j-icon" style="font-size:12px;color:var(--text2)">▼</span>
+    </div>
+    <div class="journal-body" id="journal-body">
+
+      <!-- Stats -->
+      <div class="jstat-row" id="jstats">
+        <div class="jstat"><div class="jstat-num" id="js-total">0</div><div class="jstat-lbl">Total Trade</div></div>
+        <div class="jstat"><div class="jstat-num" id="js-wr" style="color:var(--gn)">0%</div><div class="jstat-lbl">Win Rate</div></div>
+        <div class="jstat"><div class="jstat-num" id="js-profit" style="color:var(--gn)">$0</div><div class="jstat-lbl">Total P&L</div></div>
+        <div class="jstat"><div class="jstat-num" id="js-avg-rr" style="color:var(--am)">0</div><div class="jstat-lbl">Avg RR</div></div>
+      </div>
+
+      <!-- Form -->
+      <div class="journal-form">
+        <div class="jf-group">
+          <label class="jf-label">Tanggal & Waktu</label>
+          <input class="jf-input" type="datetime-local" id="jf-time">
+        </div>
+        <div class="jf-group">
+          <label class="jf-label">Arah</label>
+          <select class="jf-select" id="jf-dir">
+            <option value="BUY">BUY (Long)</option>
+            <option value="SELL">SELL (Short)</option>
+          </select>
+        </div>
+        <div class="jf-group">
+          <label class="jf-label">Entry ($)</label>
+          <input class="jf-input" type="number" step="0.01" id="jf-entry" placeholder="cth. 3250.00">
+        </div>
+        <div class="jf-group">
+          <label class="jf-label">Stop Loss ($)</label>
+          <input class="jf-input" type="number" step="0.01" id="jf-sl" placeholder="cth. 3240.00">
+        </div>
+        <div class="jf-group">
+          <label class="jf-label">Take Profit ($)</label>
+          <input class="jf-input" type="number" step="0.01" id="jf-tp" placeholder="cth. 3280.00">
+        </div>
+        <div class="jf-group">
+          <label class="jf-label">Hasil</label>
+          <select class="jf-select" id="jf-result">
+            <option value="">— pilih hasil —</option>
+            <option value="profit">✅ Profit</option>
+            <option value="loss">❌ Loss</option>
+            <option value="be">➖ Break Even</option>
+          </select>
+        </div>
+        <div class="jf-group">
+          <label class="jf-label">P&L ($) — opsional</label>
+          <input class="jf-input" type="number" step="0.01" id="jf-pnl" placeholder="cth. +50 atau -30">
+        </div>
+        <div class="jf-group">
+          <label class="jf-label">Konfirmasi yang terpenuhi</label>
+          <select class="jf-select" id="jf-conf">
+            <option value="3/3">✅ 3/3 — Semua terpenuhi</option>
+            <option value="2/3">⚠️ 2/3 — Kurang 1 konfirmasi</option>
+            <option value="1/3">❌ 1/3 — FOMO entry!</option>
+          </select>
+        </div>
+        <div class="jf-group jf-wide">
+          <label class="jf-label">Alasan Entry & Pelajaran</label>
+          <input class="jf-input" id="jf-note" placeholder="Tulis setup yang terlihat dan apa yang bisa dipelajari...">
+        </div>
+        <div class="jf-btn-row">
+          <button class="jf-save" onclick="saveJournal()">💾 Simpan Trade</button>
+          <button class="jf-clear" onclick="clearForm()">Bersihkan Form</button>
+        </div>
+      </div>
+
+      <!-- Trade list -->
+      <div class="journal-list" id="journal-list">
+        <div class="journal-empty" id="journal-empty">Belum ada trade yang dicatat. Mulai catat trade pertamamu! 📝</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="foot" id="foot">
+  Gold Entry Dashboard — Hanya 3 konfirmasi. Simpel, disiplin, konsisten. 📊<br>
+  <span style="color:var(--text3)">Dashboard ini hanya alat bantu analisis, bukan saran investasi. Trading XAU/USD mengandung risiko tinggi.</span>
+</div>
+
+<script>
+// ── STATE ──
+let ctf = '30min';
+let cache = {};
+let autoTmr = null, autoCd = null, cdS = 0;
+let TWELVE_KEY = localStorage.getItem('twelve_key') || '';
+let journalData = JSON.parse(localStorage.getItem('gold_journal') || '[]');
+let journalOpen = false;
+
+const HTFM = {'5min':'1h','15min':'1h','30min':'4h','1h':'4h','4h':'1day','1day':'1week'};
+const TFLBL = {'5min':'M5','15min':'M15','30min':'M30','1h':'H1','4h':'H4','1day':'D1','1week':'W1'};
+
+// ── INIT ──
+window.onload = function(){
+  const k = localStorage.getItem('twelve_key');
+  if(k){
+    document.getElementById('td-key').value = k;
+    document.getElementById('key-badge').textContent = '✅ Tersimpan';
+    document.getElementById('key-badge').className = 'key-badge ok';
+    TWELVE_KEY = k;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+  renderJournal();
+  // Set default datetime
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('jf-time').value = now.toISOString().slice(0,16);
+};
+
+function saveKey(){
+  const k = document.getElementById('td-key').value.trim();
+  TWELVE_KEY = k;
+  if(k){
+    localStorage.setItem('twelve_key', k);
+    document.getElementById('key-badge').textContent = '✅ Tersimpan';
+    document.getElementById('key-badge').className = 'key-badge ok';
+    cache = {};
+    loadData();
+  } else {
+    localStorage.removeItem('twelve_key');
+    document.getElementById('key-badge').textContent = 'Belum diisi';
+    document.getElementById('key-badge').className = 'key-badge none';
+  }
+}
+
+// ── CLOCK & SESSION ──
+function updateClock(){
+  const now = new Date();
+  const wib = new Date(now.getTime() + 7*3600000);
+  const h = wib.getUTCHours(), m = wib.getUTCMinutes(), s = wib.getUTCSeconds();
+  document.getElementById('wib-time').textContent =
+    String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.getElementById('wib-date').textContent =
+    wib.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'UTC'})+' WIB';
+
+  // Sessions (WIB): Tokyo 06-15, London 14-23, NY 19-04(next)
+  const hm = h + m/60;
+  const tok = hm>=6 && hm<15;
+  const lon = hm>=14 && hm<23;
+  const ny = hm>=19 || hm<4;
+
+  setSess('sess-tokyo', tok, 'sess-tokyo-badge');
+  setSess('sess-london', lon, 'sess-london-badge');
+  setSess('sess-ny', ny, 'sess-ny-badge');
+
+  const tip = document.getElementById('sess-tip');
+  if(lon && hm>=14 && hm<17) tip.textContent = '🟢 PRIME TIME — London Open aktif! Waktu terbaik untuk trading XAU/USD.';
+  else if(ny && hm>=19 && hm<22) tip.textContent = '🟢 PRIME TIME — New York Open aktif! Volatilitas tinggi, peluang bagus.';
+  else if(lon||ny) tip.textContent = '🟡 Sesi aktif tapi bukan prime time. Tetap waspada.';
+  else tip.textContent = '🔴 Di luar sesi utama. Sebaiknya istirahat dan tidak trading sekarang.';
+}
+function setSess(id, on, badgeId){
+  const el = document.getElementById(id);
+  const badge = document.getElementById(badgeId);
+  el.className = 'csess '+(on?'on':'off');
+  badge.textContent = on ? 'AKTIF' : 'TUTUP';
+}
+
+// ── INDICATORS ──
+function calcEMA(cls,p){
+  const k=2/(p+1);let r=[],pv=null;
+  for(let i=0;i<cls.length;i++){
+    if(i<p-1){r.push(null);continue}
+    if(i===p-1){pv=cls.slice(0,p).reduce((a,b)=>a+b,0)/p;r.push(+pv.toFixed(2));continue}
+    pv=cls[i]*k+pv*(1-k);r.push(+pv.toFixed(2));
+  }return r;
+}
+function calcBB(cls,p=20,m=2){
+  const u=[],l=[],md=[];
+  for(let i=0;i<cls.length;i++){
+    if(i<p-1){u.push(null);l.push(null);md.push(null);continue}
+    const s=cls.slice(i-p+1,i+1),mn=s.reduce((a,b)=>a+b,0)/p;
+    const sd=Math.sqrt(s.reduce((a,b)=>a+(b-mn)**2,0)/p);
+    u.push(+(mn+m*sd).toFixed(2));l.push(+(mn-m*sd).toFixed(2));md.push(+mn.toFixed(2));
+  }return{u,l,md};
+}
+function calcRSI(cls,p=14){
+  const r=[];
+  for(let i=0;i<cls.length;i++){
+    if(i<p){r.push(null);continue}
+    const g=[],ls=[];
+    for(let j=i-p+1;j<=i;j++){const d=cls[j]-cls[j-1];g.push(d>0?d:0);ls.push(d<0?-d:0)}
+    const ag=g.reduce((a,b)=>a+b,0)/p,al=ls.reduce((a,b)=>a+b,0)/p;
+    r.push(+(100-100/(1+(al===0?Infinity:ag/al))).toFixed(1));
+  }return r;
+}
+function calcATR(candles,p=14){
+  if(!candles||candles.length<2) return 10;
+  const trs=[];
+  for(let i=1;i<candles.length;i++){
+    const tr=Math.max(candles[i].h-candles[i].l,Math.abs(candles[i].h-candles[i-1].c),Math.abs(candles[i].l-candles[i-1].c));
+    trs.push(tr);
+  }
+  return +(trs.slice(-p).reduce((a,b)=>a+b,0)/Math.min(p,trs.length)).toFixed(2);
+}
+function marketStructure(candles){
+  if(!candles||candles.length<6) return 'neutral';
+  const recent=candles.slice(-10);
+  const highs=recent.map(c=>c.h),lows=recent.map(c=>c.l);
+  const lHi=Math.max(...highs.slice(-3)),pHi=Math.max(...highs.slice(-6,-3));
+  const lLo=Math.min(...lows.slice(-3)),pLo=Math.min(...lows.slice(-6,-3));
+  if(lHi>pHi&&lLo>pLo) return 'bullish';
+  if(lHi<pHi&&lLo<pLo) return 'bearish';
+  return 'neutral';
+}
+function detectOB(candles,lb=25){
+  const obs=[];
+  if(!candles||candles.length<3)return obs;
+  const n=Math.min(lb,candles.length-2);
+  for(let i=candles.length-2;i>=candles.length-1-n&&i>=1;i--){
+    const c=candles[i],nx=candles[i+1];
+    if(c.c<c.o&&nx.c>nx.o&&(nx.c-nx.o)>(c.o-c.c)*1.2)
+      obs.push({type:'bull',hi:c.h,lo:c.l,time:c.t,fresh:true});
+    if(c.c>c.o&&nx.c<nx.o&&(nx.o-nx.c)>(c.c-c.o)*1.2)
+      obs.push({type:'bear',hi:c.h,lo:c.l,time:c.t,fresh:true});
+  }
+  const lc=candles[candles.length-1].c;
+  obs.forEach(ob=>{if(ob.type==='bull'&&lc<ob.lo)ob.fresh=false;if(ob.type==='bear'&&lc>ob.hi)ob.fresh=false});
+  return obs.slice(0,6);
+}
+function detectFVG(candles,lb=30){
+  const fvgs=[];
+  if(!candles||candles.length<3)return fvgs;
+  const n=Math.min(lb,candles.length-2);
+  for(let i=candles.length-2;i>=candles.length-1-n&&i>=1;i--){
+    const c1=candles[i-1],c2=candles[i],c3=candles[i+1];
+    if(!c1||!c3)continue;
+    if(c3.l>c1.h&&c2.c>c2.o)fvgs.push({type:'bull',top:c3.l,bot:c1.h,time:c2.t});
+    if(c3.h<c1.l&&c2.c<c2.o)fvgs.push({type:'bear',top:c1.l,bot:c3.h,time:c2.t});
+  }
+  const lc=candles[candles.length-1];
+  return fvgs.filter(f=>!(f.type==='bull'&&lc.c<f.bot)&&!(f.type==='bear'&&lc.c>f.top)).slice(0,6);
+}
+
+// ── FETCH ──
+function setSts(cls,txt){document.getElementById('dot').className='dot '+cls;document.getElementById('stxt').textContent=txt}
+
+async function fetchTD(iv){
+  if(!TWELVE_KEY) throw new Error('Key kosong');
+  const url=`https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${iv}&outputsize=80&apikey=${TWELVE_KEY}&format=JSON`;
+  const r=await fetch(url);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  if(d.status==='error') throw new Error(d.message);
+  if(!d.values||!d.values.length) throw new Error('Data kosong');
+  return d.values.map(v=>({
+    t:Math.floor(new Date(v.datetime).getTime()/1000),
+    o:+v.open,h:+v.high,l:+v.low,c:+v.close,v:+(v.volume||0)
+  })).filter(c=>c.t>0&&c.c>0).sort((a,b)=>a.t-b.t);
+}
+
+async function getC(iv){
+  if(cache[iv]) return cache[iv];
+  setSts('dwt','Mengambil '+iv+'...');
+  const d=await fetchTD(iv);
+  cache[iv]=d;
+  return d;
+}
+
+// ── CONTROLS ──
+function chTF(tf){
+  ctf=tf;
+  document.querySelectorAll('.tf-btn').forEach(b=>{
+    b.classList.toggle('on',b.id==='tf-'+tf);
+  });
+  cache={};
+  loadData();
+}
+
+function togAuto(on){
+  clearInterval(autoTmr);clearInterval(autoCd);document.getElementById('acd').textContent='';
+  if(!on)return;
+  cdS=30;document.getElementById('acd').textContent=cdS+'s';
+  autoCd=setInterval(()=>{cdS--;document.getElementById('acd').textContent=cdS+'s';if(cdS<=0)cdS=30},1000);
+  autoTmr=setInterval(()=>{cache={};loadData();cdS=30},30000);
+}
+
+// ── MAIN LOAD ──
+async function loadData(){
+  if(!TWELVE_KEY){
+    setSts('derr','Masukkan API Key terlebih dahulu');
+    setDecision('off','⚠️','Butuh API Key','Masukkan Twelve Data API Key di atas dan klik Simpan');
+    return;
+  }
+  try{
+    setSts('dwt','Memuat data...');
+    const htf = HTFM[ctf]||'4h';
+    const [ltfC, htfC] = await Promise.all([getC(ctf), getC(htf)]);
+    setSts('dok','Live — '+new Date().toLocaleTimeString('id-ID'));
+    render(ltfC, htfC);
+  }catch(e){
+    setSts('derr','Gagal: '+e.message);
+    setDecision('off','❌','Gagal Memuat','Error: '+e.message+'. Cek API key dan koneksi internet.');
+  }
+}
+
+// ── RENDER ALL ──
+function render(ltfC, htfC){
+  const cls=ltfC.map(c=>c.c);
+  const hcls=htfC.map(c=>c.c);
+  const e20=calcEMA(cls,20), e50=calcEMA(cls,50);
+  const he20=calcEMA(hcls,20), he50=calcEMA(hcls,50);
+  const BB=calcBB(cls);
+  const RSI=calcRSI(cls);
+  const lRSI=RSI.filter(v=>v!==null).pop()||50;
+  const lE20=e20.filter(v=>v!==null).pop();
+  const lE50=e50.filter(v=>v!==null).pop();
+  const lhE20=he20.filter(v=>v!==null).pop();
+  const lhE50=he50.filter(v=>v!==null).pop();
+  const lBBU=BB.u.filter(v=>v!==null).pop();
+  const lBBL=BB.l.filter(v=>v!==null).pop();
+  const lastC=ltfC[ltfC.length-1];
+  const prevC=ltfC[ltfC.length-2]||lastC;
+  const price=lastC.c;
+  const chg=price-prevC.c, chgP=chg/prevC.c*100;
+
+  // Update price header
+  const pv=document.getElementById('price-val');
+  pv.textContent='$'+price.toFixed(2);
+  const pc=document.getElementById('price-chg');
+  pc.textContent=(chg>=0?'+':'')+chg.toFixed(2)+' ('+(chg>=0?'+':'')+chgP.toFixed(2)+'%)';
+  pc.className='price-chg '+(chg>=0?'up':'dn');
+
+  const obs=detectOB(ltfC,30);
+  const fvgs=detectFVG(ltfC,30);
+  const atr=calcATR(ltfC,14);
+
+  // ─────────────────────────────────────────
+  // BLOK 1: H4 + H1 SEARAH
+  // ─────────────────────────────────────────
+  const htf=HTFM[ctf]||'4h';
+  const htfLast=htfC[htfC.length-1];
+  const htfBull=htfLast.c>htfLast.o;
+  const ltfBull=lastC.c>lastC.o;
+
+  // EMA trend LTF
+  const emaLTFBull=lE20&&lE50&&lE20>lE50;
+  const emaHTFBull=lhE20&&lhE50&&lhE20>lhE50;
+
+  // Market structure
+  const msLTF=marketStructure(ltfC);
+  const msHTF=marketStructure(htfC);
+
+  const htfBullish=(htfBull&&emaHTFBull)||(!htfBull&&!emaHTFBull)?
+    (htfBull?true:false):(emaHTFBull?true:false);
+
+  const ltfBullish=emaLTFBull?true:(msLTF==='bullish'?true:ltfBull);
+
+  const b1Pass = htfBullish===ltfBullish;
+  const b1Dir = htfBullish?'BULLISH':'BEARISH';
+  const b1LtfDir = ltfBullish?'BULLISH':'BEARISH';
+  const msStr={bullish:'HH + HL ✅',bearish:'LH + LL ✅',neutral:'Konsolidasi'};
+
+  setBlok('blok1',
+    b1Pass?'pass':'fail',
+    b1Pass?(htfBullish?'🟢':'🔴'):b1Pass?'🟢':'❌',
+    b1Pass?(htfBullish?'BULLISH SEARAH':'BEARISH SEARAH'):'KONFLIK TF — JANGAN ENTRY',
+    [
+      ['H4 Bias', htfBull?'Bullish':'Bearish', htfBull?'up':'dn', 'b1-h4'],
+      ['H1 Bias', ltfBull?'Bullish':'Bearish', ltfBull?'up':'dn', 'b1-h1'],
+      ['EMA20 vs EMA50', lE20&&lE50?(lE20>lE50?'EMA20 > EMA50 ✅':'EMA20 < EMA50'):'—', lE20&&lE50&&lE20>lE50?'up':'dn', 'b1-ema'],
+      ['Market Structure', msStr[msLTF]||'Netral', msLTF==='bullish'?'up':msLTF==='bearish'?'dn':'neutral', 'b1-struct'],
+      ['Kesimpulan', b1Pass?(htfBullish?'✅ Dua TF BULLISH':'✅ Dua TF BEARISH'):'❌ Bertentangan — Skip!', b1Pass?'ok':'dn', 'b1-conc'],
+    ]
+  );
+
+  // ─────────────────────────────────────────
+  // BLOK 2: TRAFFIC LIGHT
+  // ─────────────────────────────────────────
+  const bbPct=lBBU&&lBBL?((price-lBBL)/(lBBU-lBBL)*100):50;
+  const rsiOk=lRSI>=30&&lRSI<=70;
+  const bbOk=bbPct>=15&&bbPct<=85;
+  const vols=ltfC.slice(-20).map(c=>c.v).filter(v=>v>0);
+  const avgVol=vols.length?vols.reduce((a,b)=>a+b,0)/vols.length:0;
+  const volOk=avgVol===0||(lastC.v>=avgVol*1.1);
+
+  // Candle pattern check
+  const bd=Math.abs(lastC.c-lastC.o),rng=lastC.h-lastC.l||1;
+  const uw=lastC.h-Math.max(lastC.o,lastC.c),lw=Math.min(lastC.o,lastC.c)-lastC.l;
+  const isConfCandle=(bd/rng>0.4);
+  const candleOk=isConfCandle;
+
+  const tlScore=[rsiOk,bbOk,candleOk,volOk].filter(Boolean).length;
+  const tlPass=tlScore>=3;
+
+  // Direction indicator for RSI
+  const rsiDir=lRSI>70?'dn':(lRSI<30?'up':'ok');
+  const bbStr=bbPct>85?'Upper (OB ⚠️)':bbPct<15?'Lower (OS ⚠️)':bbPct.toFixed(0)+'% — Normal ✅';
+  const bbDirC=bbPct>85?'dn':bbPct<15?'up':'ok';
+
+  setBlok('blok2',
+    tlPass?'pass':(tlScore>=2?'warn':'fail'),
+    tlPass?'🟢':(tlScore>=2?'🟡':'🔴'),
+    tlPass?`${tlScore}/4 HIJAU — LAYAK ENTRY`:tlScore>=2?`${tlScore}/4 — TUNGGU KONFIRMASI`:`${tlScore}/4 — BELUM LAYAK`,
+    [
+      ['RSI (30–70)', lRSI.toFixed(1)+(lRSI>70?' OB ⚠️':lRSI<30?' OS ⚠️':' Normal ✅'), rsiDir, 'b2-rsi'],
+      ['BB Position', bbStr, bbDirC, 'b2-bb'],
+      ['Candle Body', isConfCandle?'Body Kuat ✅':'Body Lemah ⚠️', isConfCandle?'ok':'neutral', 'b2-candle'],
+      ['Volume', avgVol===0?'N/A':(volOk?'Cukup ✅':'Lemah ⚠️'), volOk?'ok':'neutral', 'b2-vol'],
+      ['Skor Lampu', tlScore+'/4 indikator hijau', tlPass?'ok':tlScore>=2?'neutral':'dn', 'b2-score'],
+    ]
+  );
+
+  // ─────────────────────────────────────────
+  // BLOK 3: RETEST
+  // ─────────────────────────────────────────
+  const bullOBs=obs.filter(o=>o.type==='bull'&&o.fresh);
+  const bearOBs=obs.filter(o=>o.type==='bear'&&o.fresh);
+  const bullFVGs=fvgs.filter(f=>f.type==='bull');
+  const bearFVGs=fvgs.filter(f=>f.type==='bear');
+
+  const inBullOB=bullOBs.some(o=>price>=o.lo&&price<=o.hi);
+  const inBearOB=bearOBs.some(o=>price>=o.lo&&price<=o.hi);
+  const inBullFVG=bullFVGs.some(f=>price>=f.bot&&price<=f.top);
+  const inBearFVG=bearFVGs.some(f=>price>=f.bot&&price<=f.top);
+  const inZone=inBullOB||inBearOB||inBullFVG||inBearFVG;
+
+  // Find nearest zone
+  let nearestZoneStr='Tidak ada zona';
+  let nearestDist=999;
+  let nearestType='none';
+  bullOBs.forEach(o=>{const m=(o.lo+o.hi)/2;const d=Math.abs(price-m);if(d<nearestDist){nearestDist=d;nearestZoneStr=`Bull OB $${o.lo.toFixed(0)}–$${o.hi.toFixed(0)}`;nearestType='bull';}});
+  bearOBs.forEach(o=>{const m=(o.lo+o.hi)/2;const d=Math.abs(price-m);if(d<nearestDist){nearestDist=d;nearestZoneStr=`Bear OB $${o.lo.toFixed(0)}–$${o.hi.toFixed(0)}`;nearestType='bear';}});
+  bullFVGs.forEach(f=>{const m=(f.bot+f.top)/2;const d=Math.abs(price-m);if(d<nearestDist){nearestDist=d;nearestZoneStr=`Bull FVG $${f.bot.toFixed(0)}–$${f.top.toFixed(0)}`;nearestType='bull';}});
+  bearFVGs.forEach(f=>{const m=(f.bot+f.top)/2;const d=Math.abs(price-m);if(d<nearestDist){nearestDist=d;nearestZoneStr=`Bear FVG $${f.bot.toFixed(0)}–$${f.top.toFixed(0)}`;nearestType='bear';}});
+
+  const distPct=(nearestDist/price*100).toFixed(2);
+  const closeToZone=nearestDist<atr*1.5;
+
+  // Confirmation candle check
+  const confirmBull=lastC.c>lastC.o&&(bd/rng>0.45)&&lw/rng>0.1;
+  const confirmBear=lastC.c<lastC.o&&(bd/rng>0.45)&&uw/rng>0.1;
+  const hasConfCandle=(htfBullish?confirmBull:confirmBear);
+
+  const b3Pass=inZone&&hasConfCandle;
+  const b3Warn=inZone||closeToZone;
+
+  const zonesTotal=bullOBs.length+bearOBs.length+bullFVGs.length+bearFVGs.length;
+
+  setBlok('blok3',
+    b3Pass?'pass':(b3Warn?'warn':'fail'),
+    b3Pass?'🟢':(b3Warn?'🟡':'🔴'),
+    b3Pass?'RETEST + KONFIRMASI SELESAI':
+      inZone?'DI ZONA — TUNGGU CANDLE CLOSE':
+      closeToZone?'MENDEKATI ZONA — SIAP-SIAP':'BELUM ADA RETEST',
+    [
+      ['Level Terdekat', nearestZoneStr, nearestType==='bull'?'up':nearestType==='bear'?'dn':'neutral', 'b3-level'],
+      ['Jarak ke Level', nearestDist<99?`$${nearestDist.toFixed(1)} (${distPct}%)`:'—', closeToZone?'ok':'neutral', 'b3-dist'],
+      ['Status Retest', inZone?'✅ Harga di dalam zona!':closeToZone?'⚡ Mendekati zona':'❌ Jauh dari zona', inZone?'ok':closeToZone?'neutral':'dn', 'b3-retest'],
+      ['Candle Konfirmasi', hasConfCandle?'✅ Ada konfirmasi!':(htfBullish?'⏳ Tunggu bull candle':'⏳ Tunggu bear candle'), hasConfCandle?'ok':'neutral', 'b3-candle'],
+      ['Zona Aktif', zonesTotal>0?`${zonesTotal} zona (OB/FVG)`:'Belum ada zona', zonesTotal>0?'ok':'neutral', 'b3-zone'],
+    ]
+  );
+
+  // ─────────────────────────────────────────
+  // KEPUTUSAN AKHIR
+  // ─────────────────────────────────────────
+  const allPass=[b1Pass, tlPass, b3Pass];
+  const passCount=allPass.filter(Boolean).length;
+  const dir=htfBullish?'BUY':'SELL';
+
+  if(b1Pass && tlPass && b3Pass){
+    setDecision(dir.toLowerCase(),
+      dir==='BUY'?'🚀':'📉',
+      `BOLEH ENTRY ${dir}`,
+      `✅ Semua 3 konfirmasi terpenuhi! HTF+LTF searah ${b1Dir}, Traffic Light ${tlScore}/4, Retest selesai. Gunakan level di bawah. Tunggu candle CLOSE sebelum entry!`
+    );
+    showToast(`🎯 ENTRY ${dir}!`, `3/3 konfirmasi hijau — ${b1Dir}`, dir==='BUY'?'buy-t':'sell-t');
+  } else if(passCount===2){
+    setDecision('wait','⏳','HAMPIR — TUNGGU',
+      `⚠️ ${passCount}/3 konfirmasi terpenuhi. ${!b1Pass?'TF belum searah. ':''} ${!tlPass?'Traffic light belum hijau. ':''} ${!b3Pass?'Tunggu retest & konfirmasi candle.':''} Jangan entry dulu — sabar!`
+    );
+  } else if(passCount===1){
+    setDecision('wait','🛑','BELUM BOLEH ENTRY',
+      `❌ Hanya ${passCount}/3 konfirmasi. Setup belum siap. Tutup platform jika di luar sesi London (14-17) atau NY (19-22) WIB.`
+    );
+  } else {
+    setDecision('off','🚫','JANGAN ENTRY',
+      `❌ Tidak ada konfirmasi yang terpenuhi. Pasar tidak mendukung. Istirahat dan tunggu setup yang jelas. No FOMO!`
+    );
+  }
+
+  // ─────────────────────────────────────────
+  // ENTRY LEVELS (kalkulasi ATR-based)
+  // ─────────────────────────────────────────
+  if(b1Pass&&tlPass){
+    const entry=price;
+    const slDist=atr*1.5;
+    const sl=htfBullish?entry-slDist:entry+slDist;
+    const tp1=htfBullish?entry+slDist:entry-slDist;
+    const tp2=htfBullish?entry+slDist*2:entry-slDist*2;
+    const tp3=htfBullish?entry+slDist*3.5:entry-slDist*3.5;
+    const rr=(v,s)=>((Math.abs(v-entry)/Math.abs(sl-entry)).toFixed(1));
+
+    document.getElementById('lv-entry').textContent='$'+entry.toFixed(2);
+    document.getElementById('lv-entry-sub').textContent='Market price sekarang';
+    document.getElementById('lv-sl').textContent='$'+sl.toFixed(2);
+    document.getElementById('lv-sl-sub').textContent=`ATR x 1.5 = $${slDist.toFixed(1)}`;
+    document.getElementById('lv-tp1').textContent='$'+tp1.toFixed(2);
+    document.getElementById('lv-tp1-sub').textContent='1x ATR';
+    document.getElementById('lv-tp1-rr').textContent='RR 1:1.0';
+    document.getElementById('lv-tp2').textContent='$'+tp2.toFixed(2);
+    document.getElementById('lv-tp2-sub').textContent='2x ATR';
+    document.getElementById('lv-tp2-rr').textContent='RR 1:2.0';
+    document.getElementById('lv-tp3').textContent='$'+tp3.toFixed(2);
+    document.getElementById('lv-tp3-sub').textContent='3.5x ATR (swing)';
+    document.getElementById('lv-tp3-rr').textContent='RR 1:3.5';
+    document.getElementById('levels-note').textContent=`Berdasarkan ATR $${atr.toFixed(1)} | ${TFLBL[ctf]} — ${dir}`;
+  } else {
+    ['lv-entry','lv-sl','lv-tp1','lv-tp2','lv-tp3'].forEach(id=>{
+      document.getElementById(id).textContent='$—';
+    });
+    document.getElementById('levels-note').textContent='Butuh konfirmasi #1 + #2 untuk kalkulasi level';
+  }
+
+  // Footer
+  document.getElementById('foot').innerHTML=
+    `XAU/USD ${TFLBL[ctf]} | HTF: ${TFLBL[htf]} | ${b1Pass?'✅':'❌'} TF Searah · ${tlPass?'✅':'❌'} Traffic Light ${tlScore}/4 · ${b3Pass?'✅':'❌'} Retest | ATR: $${atr.toFixed(1)} | ${new Date().toLocaleTimeString('id-ID')}<br>
+    <span style="color:var(--text3)">Dashboard ini hanya referensi analisis teknikal, bukan saran investasi. Trading XAU/USD mengandung risiko tinggi.</span>`;
+}
+
+// ── UI HELPERS ──
+function setDecision(mode, icon, label, action){
+  const card=document.getElementById('decision-card');
+  card.className='decision-card '+mode;
+  document.getElementById('decision-icon').textContent=icon;
+  document.getElementById('decision-label').textContent=label;
+  document.getElementById('decision-action').textContent=action;
+
+  const score=document.getElementById('score-num');
+  const circle=document.getElementById('score-circle');
+  const sub=document.getElementById('decision-sub');
+
+  const passCount=[
+    document.getElementById('blok1').className.includes('pass'),
+    document.getElementById('blok2').className.includes('pass'),
+    document.getElementById('blok3').className.includes('pass')
+  ].filter(Boolean).length;
+
+  score.textContent=passCount+'/3';
+  circle.className='score-circle';
+  const modeMap={buy:'buy',sell:'sell',wait:'wait',off:'off'};
+  circle.classList.add(modeMap[mode]||'off');
+
+  const subMap={
+    buy:'Semua 3 konfirmasi hijau — Entry aman!',
+    sell:'Semua 3 konfirmasi hijau — Entry aman!',
+    wait:'Konfirmasi belum lengkap — Sabar...',
+    off:'Kondisi tidak mendukung — Istirahat'
+  };
+  sub.textContent=subMap[mode]||'—';
+}
+
+function setBlok(id, state, icon, stateText, rows){
+  const el=document.getElementById(id);
+  el.className='confirm-block '+state;
+  document.getElementById(id.replace('blok','b')+'-icon')?
+    (document.getElementById(id.slice(0,-1)+(parseInt(id.slice(-1))))+'-icon'):'';
+  // Set icon & state
+  const num=id.replace('blok','');
+  document.getElementById('b'+num+'-icon').textContent=icon;
+  document.getElementById('b'+num+'-state').textContent=stateText;
+  // Set rows
+  rows.forEach(([lbl,val,cls,elId])=>{
+    const el2=document.getElementById(elId);
+    if(el2){el2.textContent=val;el2.className='cb-row-val '+(cls||'');}
+  });
+}
+
+// ── TOAST ──
+function showToast(title,body,cls){
+  const w=document.getElementById('twrap'),t=document.createElement('div');
+  t.className='toast '+cls;
+  t.innerHTML=`<div class="tth"><span class="ttl">${title}</span><button class="tcl" onclick="this.closest('.toast').remove()">×</button></div><div class="tbd">${body}</div><div class="ttm">${new Date().toLocaleTimeString('id-ID')}</div>`;
+  w.appendChild(t);
+  setTimeout(()=>{t.style.animation='none';t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},7000);
+}
+
+// ── JOURNAL ──
+function togJournal(){
+  journalOpen=!journalOpen;
+  document.getElementById('journal-body').className='journal-body'+(journalOpen?' open':'');
+  document.getElementById('j-icon').textContent=journalOpen?'▼':'▶';
+}
+function saveJournal(){
+  const entry=document.getElementById('jf-entry').value;
+  const sl=document.getElementById('jf-sl').value;
+  const tp=document.getElementById('jf-tp').value;
+  const result=document.getElementById('jf-result').value;
+  if(!entry||!result){
+    showToast('⚠️ Form belum lengkap','Isi minimal Entry, SL, TP, dan Hasil','warn-t');return;
+  }
+  const rr=entry&&sl&&tp?((Math.abs(tp-entry)/Math.abs(sl-entry)).toFixed(2)):'—';
+  const trade={
+    id:Date.now(),
+    time:document.getElementById('jf-time').value,
+    dir:document.getElementById('jf-dir').value,
+    entry:parseFloat(entry),sl:parseFloat(sl),tp:parseFloat(tp),
+    result,pnl:parseFloat(document.getElementById('jf-pnl').value)||0,
+    conf:document.getElementById('jf-conf').value,
+    note:document.getElementById('jf-note').value,
+    rr,tf:ctf
+  };
+  journalData.unshift(trade);
+  if(journalData.length>100) journalData.pop();
+  localStorage.setItem('gold_journal',JSON.stringify(journalData));
+  renderJournal();
+  clearForm();
+  showToast('✅ Trade Tersimpan','Jurnal diperbarui!','buy-t');
+}
+function clearForm(){
+  document.getElementById('jf-entry').value='';
+  document.getElementById('jf-sl').value='';
+  document.getElementById('jf-tp').value='';
+  document.getElementById('jf-pnl').value='';
+  document.getElementById('jf-note').value='';
+  document.getElementById('jf-result').value='';
+  document.getElementById('jf-conf').value='3/3';
+}
+function renderJournal(){
+  document.getElementById('jtrade-count').textContent=`(${journalData.length} trade)`;
+  const wins=journalData.filter(t=>t.result==='profit').length;
+  const wr=journalData.length?Math.round(wins/journalData.length*100):0;
+  const totalPL=journalData.reduce((a,t)=>a+(t.pnl||0),0);
+  const avgRR=journalData.filter(t=>t.rr&&t.rr!=='—').reduce((a,t,i,arr)=>a+parseFloat(t.rr)/(arr.length),0);
+  document.getElementById('js-total').textContent=journalData.length;
+  document.getElementById('js-wr').textContent=wr+'%';
+  document.getElementById('js-wr').style.color=wr>=50?'var(--gn)':'var(--rd)';
+  document.getElementById('js-profit').textContent=(totalPL>=0?'+':'')+'$'+totalPL.toFixed(0);
+  document.getElementById('js-profit').style.color=totalPL>=0?'var(--gn)':'var(--rd)';
+  document.getElementById('js-avg-rr').textContent=avgRR.toFixed(2);
+
+  const list=document.getElementById('journal-list');
+  const empty=document.getElementById('journal-empty');
+  if(!journalData.length){empty.style.display='block';list.innerHTML='<div class="journal-empty">Belum ada trade yang dicatat. Mulai catat trade pertamamu! 📝</div>';return;}
+  empty.style.display='none';
+  list.innerHTML=journalData.slice(0,20).map(t=>`
+    <div class="jtrade ${t.result||'be'}">
+      <div class="jtrade-row">
+        <div class="jtrade-field"><div class="jtrade-field-lbl">Waktu</div><div class="jtrade-field-val">${t.time||'—'}</div></div>
+        <div class="jtrade-field"><div class="jtrade-field-lbl">Arah</div><div class="jtrade-field-val" style="color:${t.dir==='BUY'?'var(--gn)':'var(--rd)'}">${t.dir}</div></div>
+        <div class="jtrade-field"><div class="jtrade-field-lbl">Entry</div><div class="jtrade-field-val">$${t.entry}</div></div>
+        <div class="jtrade-field"><div class="jtrade-field-lbl">SL</div><div class="jtrade-field-val" style="color:var(--rd)">$${t.sl}</div></div>
+        <div class="jtrade-field"><div class="jtrade-field-lbl">TP</div><div class="jtrade-field-val" style="color:var(--gn)">$${t.tp}</div></div>
+        <div class="jtrade-field"><div class="jtrade-field-lbl">RR</div><div class="jtrade-field-val">1:${t.rr}</div></div>
+        <div class="jtrade-field"><div class="jtrade-field-lbl">P&L</div><div class="jtrade-field-val jtrade-result">${t.pnl>=0?'+':''}$${t.pnl}</div></div>
+        <div class="jtrade-field"><div class="jtrade-field-lbl">Konfirmasi</div><div class="jtrade-field-val">${t.conf}</div></div>
+        <div class="jtrade-field" style="flex:2"><div class="jtrade-field-lbl">Catatan</div><div class="jtrade-field-val" style="font-weight:400;color:var(--text2)">${t.note||'—'}</div></div>
+        <div class="jtrade-field"><div class="jtrade-field-lbl">Hapus</div><div class="jtrade-field-val"><button onclick="delTrade(${t.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px">🗑</button></div></div>
+      </div>
+    </div>
+  `).join('');
+}
+function delTrade(id){
+  journalData=journalData.filter(t=>t.id!==id);
+  localStorage.setItem('gold_journal',JSON.stringify(journalData));
+  renderJournal();
+}
+
+loadData();
+</script>
+</body>
+</html>
