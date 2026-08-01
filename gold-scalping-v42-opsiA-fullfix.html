@@ -3345,11 +3345,12 @@ function playBeep(dir){
 
 async function sendTelegram(msg){
   if(!TGTOKEN || !TGCHAT) return;
+  const labeled = `🅰️ <b>[Opsi A]</b>\n${msg}`; // label biar kebedain dari Opsi B pas channel-nya di-share
   try{
     await fetch(`https://api.telegram.org/bot${TGTOKEN}/sendMessage`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({chat_id:TGCHAT, text:msg, parse_mode:'HTML'})
+      body: JSON.stringify({chat_id:TGCHAT, text:labeled, parse_mode:'HTML'})
     });
   }catch(e){ console.error('Telegram error', e); }
 }
