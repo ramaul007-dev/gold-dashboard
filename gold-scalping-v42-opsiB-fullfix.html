@@ -256,7 +256,7 @@
   .banner .sig{font-family:var(--serif); font-size:25.5px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:.25rem;}
   .banner .sub2{font-size:14.5px; color:var(--text2); font-family:var(--serif); font-style:italic; letter-spacing:.3px;}
 
-  .checks{display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem; margin-top:.6rem; flex-grow:1; flex-shrink:0; flex-basis:auto; max-height:9.5rem;}
+  .checks{display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem; margin-top:.6rem; flex-grow:1; flex-shrink:0; flex-basis:auto; max-height:8.6rem;}
   .chk{
     background:linear-gradient(160deg, var(--panel3), var(--panel2) 60%); border-radius:var(--r-md); padding:.55rem .5rem; text-align:center;
     border:1px solid var(--border); transition:.2s;
@@ -295,7 +295,7 @@
   .extra-badge{
     flex:1; min-width:190px; display:flex; align-items:center; gap:.6rem;
     background:linear-gradient(160deg, var(--panel2), var(--panel) 65%); border:1px dashed var(--border-lite); border-radius:var(--r-sm);
-    padding:.65rem .85rem;
+    padding:.5rem .75rem;
   }
   .extra-badge .eb-ic{
     width:9px; height:9px; border-radius:50%; flex-shrink:0;
@@ -315,6 +315,14 @@
     background:radial-gradient(circle at 32% 26%, #ffdb9d, #eab654 55%, #a3771f 100%);
     box-shadow:0 1px 2px rgba(0,0,0,.55), 0 1px 1px rgba(255,255,255,.5) inset, 0 0 6px rgba(234,182,84,.4);
   }
+  /* Kotak badge konfirmasi tambahan (Sweep Radar, Polaritas Zona, dst) — dulu overflow-nya "visible" jadi kalau
+     total tinggi 8 badge ngelewatin max-height, teksnya kepotong sambil numpuk nimpa panel ENTRY/SL/TP di
+     bawahnya. Sekarang dikunci scroll internal sendiri (gak ngaruh ke kolom lain), jadi kalaupun kepanjangan,
+     teksnya tetep kebaca lengkap lewat scroll kecil di sini — bukan kepotong & numpuk. */
+  .badges-wrap{max-height:12.2rem; overflow-y:auto; overflow-x:hidden; padding-right:3px;}
+  .badges-wrap::-webkit-scrollbar{width:6px;}
+  .badges-wrap::-webkit-scrollbar-track{background:transparent;}
+  .badges-wrap::-webkit-scrollbar-thumb{background:var(--border-lite); border-radius:6px;}
   .chk .lb{font-size:11.5px; color:var(--text2); margin-top:.3rem; font-weight:600; letter-spacing:1px; font-family:var(--serif);}
   .chk .dt{font-size:11px; color:var(--text3); margin-top:.15rem; font-family:var(--mono); font-weight:700;}
 
@@ -333,10 +341,10 @@
   .card.card-fill.sig-card-fit{flex:1; justify-content:flex-start;}
 
   /* Panel ENTRY/SL/TP1/TP2 kolom tengah doang — tinggi tiap kotak ngikutin isi doang (gak ikut stretch kaya sebelumnya) */
-  .levels-entry{flex:0 0 auto; align-content:start; margin-top:1.1rem;}
-  .levels-entry .lv{justify-content:center; gap:.4rem; padding:1rem .55rem;}
-  .levels-entry .lv .k{min-height:0; font-size:12.5px;}
-  .levels-entry .lv .v{font-size:21px; margin-top:0;}
+  .levels-entry{flex:0 0 auto; align-content:start; margin-top:.35rem;}
+  .levels-entry .lv{justify-content:center; gap:.2rem; padding:.45rem .5rem;}
+  .levels-entry .lv .k{min-height:0; font-size:11.5px;}
+  .levels-entry .lv .v{font-size:18px; margin-top:0;}
   /* Mode fullscreen doang — kotak ENTRY/SL/TP1/TP2 dibesarkan lagi biar ngisi sisa ruang kosong yang muncul karena card jadi lebih tinggi. Mode normal gak kena, karena selector ini cuma aktif pas :fullscreen. */
   :fullscreen .levels-entry .lv{padding:2.6rem .8rem; gap:.7rem;}
   :fullscreen .levels-entry .lv .k{font-size:14px;}
@@ -750,7 +758,7 @@
           </div>
         </div>
         <div class="sub" id="sr-levels" style="margin-top:.45rem; padding:.4rem .6rem; background:var(--panel2); border-radius:8px; font-family:var(--serif); font-style:italic; letter-spacing:.3px;">S/R terdekat: —</div>
-        <div class="row" style="gap:.4rem; margin-top:.4rem; flex-wrap:wrap; flex-grow:1; flex-shrink:0; flex-basis:auto; align-items:stretch; max-height:8rem;">
+        <div class="row badges-wrap" style="gap:.3rem; margin-top:.3rem; flex-wrap:wrap; flex-grow:1; flex-shrink:0; flex-basis:auto; align-items:stretch;">
           <div class="extra-badge" id="badge-sweep">
             <span class="eb-ic"></span>
             <div>
