@@ -2049,9 +2049,9 @@ function notifySignal(r){
 // ══════════════════════════════════════════════════
 // TRADE LOG — buka posisi, cek TP/SL, statistik, export Excel
 // ══════════════════════════════════════════════════
-const TRADE_LOG_KEY = 'gsl_trade_log';
+const TRADE_LOG_KEY = 'gsl_trade_log_A';
 let tradeLog = JSON.parse(localStorage.getItem(TRADE_LOG_KEY) || '[]');
-const BD_RESET_KEY = 'gsl_bd_reset_at';
+const BD_RESET_KEY = 'gsl_bd_reset_at_A';
 let bdResetAt = parseInt(localStorage.getItem(BD_RESET_KEY) || '0', 10);
 // Migrasi data lama: versi sebelumnya cuma punya status generic 'tp' (belum granular tp1/tp2/tp3).
 // Tanpa migrasi ini, record lama gak match key baru & jatuh ke default "Pending" walau sudah closed.
