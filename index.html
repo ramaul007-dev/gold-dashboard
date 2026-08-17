@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XAUUSD Dashboard — Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0d0d; --panel:#161514; --panel-2:#1c1a17; --panel-3:#22201b;
+    --hairline:rgba(255,235,180,.09); --hairline-strong:#5c4626;
+    --ink:#f5ecd8; --ink-dim:#c9a862; --ink-faint:#8f7748;
+    --gold:#e2ba64; --gold-bright:#f8e4ab; --gold-dim:#a3854a;
+    --gn:#43d69a; --rust-bright:#ea6e64;
+    --serif:'Marcellus',Georgia,serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1400px 800px at 12% -15%, rgba(201,162,39,0.06), transparent 55%),
+      radial-gradient(1000px 700px at 90% 10%, rgba(201,162,39,0.04), transparent 50%),
+      var(--bg);
+    color:var(--ink); font-family:var(--serif); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:60px 20px 40px;
+  }
+  .logo{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(160deg, var(--panel-3), var(--panel-2) 60%); border:1px solid var(--hairline-strong);
+    font-family:var(--mono); font-weight:700; font-size:11px; color:var(--gold); letter-spacing:.03em; text-align:center; line-height:1.15; margin-bottom:18px;}
+  h1{font-size:26px; margin:0 0 6px; letter-spacing:.02em;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold) 65%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .sub{color:var(--ink-faint); font-size:13px; margin:0 0 42px; text-align:center; max-width:480px; line-height:1.6;}
+  .grid{display:grid; grid-template-columns:1fr; gap:16px; width:100%; max-width:520px;}
+  @media(min-width:720px){ .grid{grid-template-columns:1fr 1fr;} }
+  .card{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--hairline-strong); border-radius:16px; padding:22px;
+    text-decoration:none; color:var(--ink); display:flex; flex-direction:column; gap:10px;
+    transition:border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+  .card:hover{border-color:var(--gold-dim); transform:translateY(-2px); box-shadow:0 12px 28px -14px rgba(226,186,100,.35);}
+  .card .tag{font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-dim); font-weight:700;}
+  .card h2{margin:0; font-size:18px; color:var(--gold-bright); font-weight:400;}
+  .card p{margin:0; font-size:12.5px; color:var(--ink-faint); line-height:1.55;}
+  .stats{display:flex; gap:14px; margin-top:4px; font-family:var(--mono); font-size:11px;}
+  .stats span{color:var(--ink-dim);}
+  .stats b{color:var(--gn);}
+  .open{margin-top:6px; font-family:var(--mono); font-size:11px; color:var(--gold-dim); display:flex; align-items:center; gap:5px;}
+  .card:hover .open{color:var(--gold-bright);}
+  footer{margin-top:46px; font-size:11px; color:var(--ink-faint); text-align:center; max-width:480px; line-height:1.7; font-family:var(--mono);}
+  footer b{color:var(--ink-dim);}
+</style>
+</head>
+<body>
+  <div class="logo">XAU<br>USD</div>
+  <h1>XAUUSD Signal Dashboards</h1>
+  <p class="sub">Pilih dashboard yang mau dibuka. Masing-masing nyimpen API key &amp; riwayat sinyal sendiri-sendiri di browser ini (gak numpang satu sama lain).</p>
+
+  <div class="grid">
+    <a class="card" href="smc-ob-radar-fixed.html">
+      <div class="tag">Multi-Mode</div>
+      <h2>SMC OB Radar — Live</h2>
+      <p>Bias H4+H1 selaras · Entry M15 (Engulfing/Order Block). Bisa pilih mode Conservative atau Growth.</p>
+      <div class="stats"><span>Conservative <b>WR 72.3%</b></span><span>Growth <b>WR 45.1%</b></span></div>
+      <div class="open">Buka dashboard →</div>
+    </a>
+
+    <a class="card" href="smc-ob-radar-balanced-fixed.html">
+      <div class="tag">Single-Mode</div>
+      <h2>SMC OB Radar — Balanced</h2>
+      <p>Varian Balanced (titik tengah Conservative/Growth), SL 2.0×ATR / TP 2.0×ATR, R:R 1:1.</p>
+      <div class="stats"><span>Referensi <b>WR 56.6%</b></span><span>PF <b>1.31</b></span></div>
+      <div class="open">Buka dashboard →</div>
+    </a>
+  </div>
+
+  <footer>Butuh <b>Twelve Data API Key</b> (data candle) &amp; opsional <b>Finnhub API Key</b> (live tick) — diisi langsung di masing-masing dashboard, tersimpan di browser (localStorage), gak dikirim ke mana-mana selain ke provider datanya sendiri.</footer>
+</body>
+</html>
