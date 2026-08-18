@@ -636,6 +636,20 @@
         <div id="regimeBody"><div class="hint">Klik Refresh untuk bandingkan performa live vs referensi backtest ~2 tahun.</div></div>
       </div>
 
+      <div class="card violet-card">
+        <h3><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>EMA Sweep Test (H4)</h3>
+        <div class="hint" style="margin:0 0 10px;">Nyobain beberapa periode EMA H4 (50/75/100/150/200) ke data historis yang sama, biar kelihatan mana yang PF/WR-nya paling bagus buat mode <b id="sweepModeLabel">Conservative</b> yang lagi aktif. H1 tetap EMA50.</div>
+        <div class="rr-select" id="sweepMonthSelect" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px;">
+          <button data-months="1" class="bt-month-btn">1 Bulan</button>
+          <button data-months="3" class="bt-month-btn active">3 Bulan</button>
+          <button data-months="6" class="bt-month-btn">6 Bulan</button>
+          <button data-months="12" class="bt-month-btn">12 Bulan</button>
+        </div>
+        <button class="icon-btn" id="btnRunSweep" style="width:100%;padding:10px;font-size:12px;justify-content:center;" onclick="runEmaSweep(getSweepMonths())">▶ Jalankan EMA Sweep</button>
+        <div class="hint" id="sweepStatus" style="margin-top:10px;">Belum dijalankan. Butuh Twelve Data API Key. Makin panjang periode, makin banyak API call.</div>
+        <div id="sweepResult" style="margin-top:10px;"></div>
+      </div>
+
       <div class="card card-fill riwayat-card">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;">
           <h3 style="margin:0;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 16 14"/></svg>Riwayat Sinyal <span class="pattern-tag" id="tableCount"></span></h3>
@@ -800,14 +814,17 @@ function runLive(h4Candles, h1Candles, m15Candles, opts={}){
   const mode = opts.mode || 'conservative';
   const {slMult, tpMult} = MODE_PARAMS[mode];
   const rr = tpMult/slMult;
-  const h4Trend = htfTrendFlags(h4Candles, 100);
-  const h1Trend = htfTrendFlags(h1Candles, 50);
+  const h4EmaN = opts.h4EmaN || 100; // dibikin bisa diganti-ganti buat EMA Sweep Test
+  const h1EmaN = opts.h1EmaN || 50;
+  const h4Trend = htfTrendFlags(h4Candles, h4EmaN);
+  const h1Trend = htfTrendFlags(h1Candles, h1EmaN);
   const h4OnM15 = alignHtfToM15(m15Candles, h4Candles, h4Trend);
   const h1OnM15 = alignHtfToM15(m15Candles, h1Candles, h1Trend);
   const {sig, source} = detectSmcSignals(m15Candles, h4OnM15, h1OnM15);
   const o=m15Candles.map(r=>r.open), h=m15Candles.map(r=>r.high), l=m15Candles.map(r=>r.low), c=m15Candles.map(r=>r.close);
   const atr = computeATR(h,l,c,14);
   const n = m15Candles.length;
+
 
   const trades = [];
   let nextAllowedIdx = 0; // 1 posisi aktif dalam satu waktu — sinyal baru diabaikan selama posisi sebelumnya belum resolve
@@ -960,6 +977,101 @@ async function fetchTD(interval, outputsize){
   return json.values.reverse().map(v=>({
     dt: new Date(v.datetime+'Z'), open:+v.open, high:+v.high, low:+v.low, close:+v.close
   }));
+}
+
+// ============================================================
+// EMA SWEEP TEST: narik data lebih jauh ke belakang (chunked via end_date, dikasih
+// jeda biar aman dari rate limit), lalu jalanin runLive() berkali-kali dengan
+// periode EMA H4 yang beda-beda buat lihat mana yang PF/WR-nya paling bagus.
+// ============================================================
+async function fetchTDChunk(interval, outputsize, endDate){
+  const key = getKey('tdKey');
+  if(!key) throw new Error('NO_KEY');
+  let url = `https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=${interval}&outputsize=${outputsize}&timezone=UTC&apikey=${key}`;
+  if(endDate) url += `&end_date=${encodeURIComponent(endDate)}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  if(json.status === 'error') throw new Error(json.message || 'Twelve Data error');
+  if(!json.values || !json.values.length) return [];
+  return json.values.reverse().map(v=>({
+    dt: new Date(v.datetime+'Z'), open:+v.open, high:+v.high, low:+v.low, close:+v.close
+  }));
+}
+async function fetchTDLongHistory(interval, targetDays, durationMsPerCandle, onProgress, delayMs=8000){
+  let all = [];
+  let endDate = null;
+  const targetMs = targetDays*86400000;
+  const outputsize = 5000;
+  let chunkCount = 0;
+  const maxChunks = 40;
+  while(chunkCount < maxChunks){
+    chunkCount++;
+    if(onProgress) onProgress(`${interval} — chunk ${chunkCount}${endDate ? ' (sampai '+endDate+')' : ' (data terbaru)'}...`);
+    const chunk = await fetchTDChunk(interval, outputsize, endDate);
+    if(!chunk.length) break;
+    all = chunk.concat(all);
+    const span = all[all.length-1].dt - all[0].dt;
+    if(span >= targetMs) break;
+    if(chunk.length < outputsize) break;
+    const nextEnd = new Date(chunk[0].dt.getTime() - durationMsPerCandle);
+    endDate = nextEnd.toISOString().slice(0,19).replace('T',' ');
+    await new Promise(r=>setTimeout(r, delayMs));
+  }
+  const seen = new Set(), dedup = [];
+  for(const c of all){ const k=c.dt.getTime(); if(seen.has(k)) continue; seen.add(k); dedup.push(c); }
+  dedup.sort((a,b)=>a.dt-b.dt);
+  return dedup;
+}
+function getSweepMonths(){
+  const active = document.querySelector('#sweepMonthSelect .bt-month-btn.active');
+  return active ? +active.dataset.months : 3;
+}
+let emaSweepRunning = false;
+async function runEmaSweep(months){
+  if(emaSweepRunning) return;
+  if(!getKey('tdKey')){ showToast('API Key kosong', 'Isi Twelve Data API Key dulu di panel kiri.'); return; }
+  emaSweepRunning = true;
+  const btn = document.getElementById('btnRunSweep');
+  const statusEl = document.getElementById('sweepStatus');
+  const resultEl = document.getElementById('sweepResult');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Menjalankan...'; }
+  resultEl.innerHTML = '';
+  const targetDays = months*30;
+  try{
+    const h4 = await fetchTDLongHistory('4h', targetDays, 4*3600*1000, msg=>statusEl.textContent=msg);
+    const h1 = await fetchTDLongHistory('1h', targetDays, 1*3600*1000, msg=>statusEl.textContent=msg);
+    const m15 = await fetchTDLongHistory('15min', targetDays, 15*60*1000, msg=>statusEl.textContent=msg);
+    if(m15.length < 100){ throw new Error('Data M15 kurang dari 100 candle — cek API key / limit akun.'); }
+    statusEl.textContent = `Menghitung sinyal dari ${m15.length} candle M15, mode ${CURRENT_MODE}, buat tiap periode EMA H4...`;
+    const candidates = [50, 75, 100, 150, 200];
+    const rows = candidates.map(emaN=>{
+      const res = runLive(h4, h1, m15, { mode: CURRENT_MODE, h4EmaN: emaN, h1EmaN: 50 });
+      return { emaN, ...res.stats };
+    });
+    const spanDays = Math.round((m15[m15.length-1].dt - m15[0].dt)/86400000);
+    const bestPf = Math.max(...rows.filter(r=>r.total>0).map(r=>isFinite(r.pf)?r.pf:0));
+    resultEl.innerHTML = `
+      <div class="hint" style="margin:0 0 8px;">${spanDays} hari (${m15.length} candle M15) · mode <b style="color:var(--ink);">${CURRENT_MODE}</b> · H1 EMA tetap 50</div>
+      <table class="rr-compare-table">
+        <thead><tr><th>EMA H4</th><th>Sinyal</th><th>WR</th><th>PF</th><th>Expectancy</th></tr></thead>
+        <tbody>
+          ${rows.map(r=>`<tr style="${isFinite(r.pf)&&r.pf===bestPf&&r.total>0?'color:var(--gold-bright);font-weight:700;':''}">
+            <td>${r.emaN}${r.emaN===100?' (skrg)':''}</td>
+            <td>${r.total}</td>
+            <td>${r.total?r.winRate.toFixed(1)+'%':'—'}</td>
+            <td>${r.total?(isFinite(r.pf)?r.pf.toFixed(2):'∞'):'—'}</td>
+            <td>${r.total?(r.expectancy>=0?'+':'')+r.expectancy.toFixed(3):'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="hint" style="margin-top:8px;">Baris warna emas = PF tertinggi di antara kandidat. ⚠️ Hati-hati overfitting — kalau beda PF antar EMA cuma tipis, itu bisa cuma noise sample, bukan beda beneran. Butuh sample banyak (100+ sinyal per baris) sebelum yakin satu EMA beneran lebih unggul.</div>`;
+    statusEl.textContent = `Selesai — ${new Date().toLocaleTimeString('id-ID')}`;
+  }catch(e){
+    statusEl.textContent = '❌ Gagal: ' + e.message;
+  }finally{
+    emaSweepRunning = false;
+    if(btn){ btn.disabled = false; btn.textContent = '▶ Jalankan EMA Sweep'; }
+  }
 }
 
 let livePrice = null, prevPrice = null, goldApiTimer = null;
@@ -1785,7 +1897,14 @@ document.getElementById('modeSelect').addEventListener('click', e=>{
   document.querySelectorAll('#modeSelect button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   CURRENT_MODE = btn.dataset.mode;
+  const sweepLabel = document.getElementById('sweepModeLabel');
+  if(sweepLabel) sweepLabel.textContent = CURRENT_MODE.charAt(0).toUpperCase()+CURRENT_MODE.slice(1);
   refreshCandlesAndSignal();
+});
+document.getElementById('sweepMonthSelect').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#sweepMonthSelect .bt-month-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
 });
 document.getElementById('ivSelect').addEventListener('click', e=>{
   const btn = e.target.closest('button'); if(!btn) return;
