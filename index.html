@@ -33,8 +33,9 @@
   h1{font-size:26px; margin:0 0 6px; letter-spacing:.02em;
     background:linear-gradient(180deg,var(--gold-bright),var(--gold) 65%);-webkit-background-clip:text;background-clip:text;color:transparent;}
   .sub{color:var(--ink-faint); font-size:13px; margin:0 0 42px; text-align:center; max-width:480px; line-height:1.6;}
-  .grid{display:grid; grid-template-columns:1fr; gap:16px; width:100%; max-width:520px;}
+  .grid{display:grid; grid-template-columns:1fr; gap:16px; width:100%; max-width:780px;}
   @media(min-width:720px){ .grid{grid-template-columns:1fr 1fr;} }
+  @media(min-width:1080px){ .grid{grid-template-columns:1fr 1fr 1fr;} }
   .card{
     background:linear-gradient(180deg, var(--panel-2), var(--panel));
     border:1px solid var(--hairline-strong); border-radius:16px; padding:22px;
@@ -42,10 +43,12 @@
     transition:border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
   .card:hover{border-color:var(--gold-dim); transform:translateY(-2px); box-shadow:0 12px 28px -14px rgba(226,186,100,.35);}
-  .card .tag{font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-dim); font-weight:700;}
+  .card.featured{border-color:var(--gold-dim); box-shadow:0 0 0 1px rgba(226,186,100,.15) inset;}
+  .card .tag{font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-dim); font-weight:700; display:flex; align-items:center; gap:6px;}
+  .card .tag .badge{background:rgba(67,214,154,.12); color:var(--gn); border:1px solid rgba(67,214,154,.35); border-radius:5px; padding:1px 6px; font-size:9px;}
   .card h2{margin:0; font-size:18px; color:var(--gold-bright); font-weight:400;}
   .card p{margin:0; font-size:12.5px; color:var(--ink-faint); line-height:1.55;}
-  .stats{display:flex; gap:14px; margin-top:4px; font-family:var(--mono); font-size:11px;}
+  .stats{display:flex; gap:14px; margin-top:4px; font-family:var(--mono); font-size:11px; flex-wrap:wrap;}
   .stats span{color:var(--ink-dim);}
   .stats b{color:var(--gn);}
   .open{margin-top:6px; font-family:var(--mono); font-size:11px; color:var(--gold-dim); display:flex; align-items:center; gap:5px;}
@@ -60,6 +63,14 @@
   <p class="sub">Pilih dashboard yang mau dibuka. Masing-masing nyimpen API key &amp; riwayat sinyal sendiri-sendiri di browser ini (gak numpang satu sama lain).</p>
 
   <div class="grid">
+    <a class="card featured" href="smc-ob-radar-conservative-3.0.html">
+      <div class="tag">Multi-Mode <span class="badge">Tuned Guard</span></div>
+      <h2>SMC OB Radar — Conservative 3.0</h2>
+      <p>Sama kayak SMC OB Radar Live, tapi SL sekarang ikut swing low/high struktural (bukan ATR polos) — sinyal yang bakal ketabrak liquidity sweep di-skip dulu. Parameter per-mode hasil sweep 14 bulan data.</p>
+      <div class="stats"><span>Conservative <b>WR 74.5%</b></span><span>Growth <b>WR 48.0%</b></span></div>
+      <div class="open">Buka dashboard →</div>
+    </a>
+
     <a class="card" href="smc-ob-radar-fixed.html">
       <div class="tag">Multi-Mode</div>
       <h2>SMC OB Radar — Live</h2>
