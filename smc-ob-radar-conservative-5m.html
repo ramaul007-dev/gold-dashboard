@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SMC OB Radar — 5M</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null; var s=document.createElement('script'); s.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'; document.head.appendChild(s);"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1812,9 +1812,22 @@ function refreshOpenBadges(){
 // ============================================================
 // EXPORT EXCEL (styling premium, selaras dengan Gold Scalping v42)
 // ============================================================
+function getSessionWIB(dt){
+  const h = dt.getHours(); // dashboard already runs in local WIB context
+  // Tokyo 06-15, London 14-23, New York 19-04 (WIB) — overlaps possible, pick primary by priority NY>London>Tokyo when overlapping
+  if(h>=19 || h<4) return 'New York';
+  if(h>=14 && h<23) return 'London';
+  if(h>=6 && h<15) return 'Tokyo';
+  return 'Luar Sesi';
+}
+
 function exportExcel(){
   if(!lastResult || !lastResult.trades || lastResult.trades.length===0){ showToast('⚠️ Belum Ada Data', 'Belum ada sinyal buat di-export.'); return; }
-  if(typeof XLSX === 'undefined'){ showToast('❌ Gagal Export', 'Library Excel belum termuat, coba refresh halaman.'); return; }
+  if(typeof XLSX === 'undefined'){
+    showToast('⚠️ Library Excel Gagal Muat', 'Export otomatis dialihkan ke format CSV (tetap kebuka di Excel).');
+    exportCSVFallback();
+    return;
+  }
 
   const BG_DARK='FF0D1117', BG_PANEL='FF161B22', BORDER_C='FF30363D';
   const C_GOLD='FFF0A030', C_GRAY='FF8B949E', C_WHITE='FFF0F6FC', C_BLUE='FF58A6FF';
@@ -1822,77 +1835,269 @@ function exportExcel(){
   const FONT_UI='Segoe UI', FONT_NUM='Courier New';
   const thin={style:'thin',color:{rgb:BORDER_C}};
   const allBorder={top:thin,bottom:thin,left:thin,right:thin};
-  const NCOL=12;
 
-  function blankRow(bg){ const row=[]; for(let i=0;i<NCOL;i++) row.push({v:'',t:'s',s:{fill:{fgColor:{rgb:bg}}}}); return row; }
-  function labelCell(v,bg){ return {v,t:'s',s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:C_GRAY}},fill:{fgColor:{rgb:bg}},alignment:{horizontal:'center'}}}; }
-  function bigValueCell(v,color,bg){ return {v,t:typeof v==='number'?'n':'s',s:{font:{name:FONT_UI,sz:20,bold:true,color:{rgb:color}},fill:{fgColor:{rgb:bg}},alignment:{horizontal:'center'}}}; }
+  function blankRow(bg,n){ const row=[]; for(let i=0;i<n;i++) row.push({v:'',t:'s',s:{fill:{fgColor:{rgb:bg}}}}); return row; }
+  function labelCell(v,bg){ return {v,t:'s',s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:C_GRAY}},fill:{fgColor:{rgb:bg}},alignment:{horizontal:'center',vertical:'bottom'}}}; }
+  function bigValueCell(v,color,bg){ return {v,t:typeof v==='number'?'n':'s',s:{font:{name:FONT_UI,sz:22,bold:true,color:{rgb:color}},fill:{fgColor:{rgb:bg}},alignment:{horizontal:'center',vertical:'center'}}}; }
+  function titleCell(v,color,bg,sz){ return {v,t:'s',s:{font:{name:FONT_UI,sz:sz||14,bold:true,color:{rgb:color}},fill:{fgColor:{rgb:bg}},alignment:{horizontal:'center',vertical:'center'}}}; }
+  function subLabel(v,bg,color){ return {v,t:'s',s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:color||C_WHITE}},fill:{fgColor:{rgb:bg}}}}; }
+  function subVal(v,bg,color,isNum){ return {v,t:isNum?'n':'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:color||C_WHITE}},fill:{fgColor:{rgb:bg}},alignment:{horizontal:isNum?'right':'left'}}}; }
 
   const trades = lastResult.trades;
   const s = lastResult.stats;
-  const winRateLabel = s.total ? s.winRate.toFixed(1)+'%' : '—';
-  const pfLabel = s.total ? (isFinite(s.pf) ? s.pf.toFixed(2) : '∞') : '—';
-  const expLabel = s.total ? (s.expectancy>=0?'+':'') + s.expectancy.toFixed(3) : '—';
+  const winRateLabel = s.total ? Math.round(s.winRate)+'%' : '-';
   const todayStr = new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
-
-  // ── Sheet: Riwayat Sinyal ──
-  const aoa = [];
-  aoa.push(blankRow(BG_DARK));
-  const titleRow = blankRow(BG_DARK);
-  titleRow[0] = {v:`SMC MULTI-TF RADAR · LIVE  —  Riwayat Sinyal · ${todayStr}`, t:'s',
-    s:{font:{name:FONT_UI, sz:14, bold:true, color:{rgb:C_GOLD}}, fill:{fgColor:{rgb:BG_DARK}}}};
-  aoa.push(titleRow);
-  aoa.push(blankRow(BG_DARK));
-
-  const labelRow = blankRow(BG_PANEL);
-  labelRow[0]=labelCell('TOTAL SINYAL',BG_PANEL); labelRow[2]=labelCell('WIN RATE',BG_PANEL);
-  labelRow[4]=labelCell('PROFIT FACTOR',BG_PANEL); labelRow[6]=labelCell('EXPECTANCY (R)',BG_PANEL);
-  aoa.push(labelRow);
-
-  const valueRow = blankRow(BG_PANEL);
-  valueRow[0]=bigValueCell(s.total,C_BLUE,BG_PANEL); valueRow[2]=bigValueCell(winRateLabel,C_PURPLE,BG_PANEL);
-  valueRow[4]=bigValueCell(pfLabel,C_GOLD,BG_PANEL); valueRow[6]=bigValueCell(expLabel,s.expectancy>=0?C_GREEN:C_RED,BG_PANEL);
-  aoa.push(valueRow);
-  aoa.push(blankRow(BG_PANEL));
-
-  const headers = ['No','Masuk','Arah','Setup','Mode','Entry ($)','SL ($)','TP ($)','R:R','Hasil','Selesai','Durasi'];
-  const headerColors = [C_GRAY,C_GRAY,C_WHITE,C_GRAY,C_PURPLE,C_GOLD,C_RED,C_GREEN,C_GRAY,C_WHITE,C_GRAY,C_GRAY];
-  aoa.push(headers.map((h,i)=>({v:h, t:'s', s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:headerColors[i]}},
-    fill:{fgColor:{rgb:BG_PANEL}}, alignment:{horizontal:'center',vertical:'center',wrapText:true}, border:allBorder}})));
+  const modeLabel = CURRENT_MODE==='growth' ? 'Growth' : 'Conservative';
 
   const ordered = trades.slice().reverse();
+  const wins = trades.filter(t=>t.result==='WIN').length;
+  const losses = trades.filter(t=>t.result==='LOSS').length;
+  const pending = trades.filter(t=>t.result==='OPEN').length;
+
+  // session breakdown
+  const sessions = ['Tokyo','London','New York'];
+  const sessStats = {};
+  sessions.forEach(sn => sessStats[sn] = {total:0, tp:0, sl:0, pending:0});
+  trades.forEach(t => {
+    const sn = getSessionWIB(new Date(t.dt));
+    if(!sessStats[sn]) sessStats[sn] = {total:0, tp:0, sl:0, pending:0};
+    sessStats[sn].total++;
+    if(t.result==='WIN') sessStats[sn].tp++;
+    else if(t.result==='LOSS') sessStats[sn].sl++;
+    else sessStats[sn].pending++;
+  });
+
+  // ══════════════ SHEET 1: Dashboard ══════════════
+  const aoa1 = [];
+  aoa1.push(blankRow(BG_DARK,13));
+  const t1 = blankRow(BG_DARK,13);
+  t1[0] = titleCell(`⚡  SMC OB RADAR — ${modeLabel}  ·  M5 Scalping  ·  ${todayStr}`, C_GOLD, BG_DARK);
+  aoa1.push(t1);
+  aoa1.push(blankRow(BG_DARK,13));
+
+  const lbl1 = blankRow(BG_PANEL,13);
+  lbl1[0]=labelCell('🎯  TOTAL SINYAL',BG_PANEL); lbl1[4]=labelCell('✅  TP HIT',BG_PANEL);
+  lbl1[7]=labelCell('❌  SL HIT',BG_PANEL); lbl1[9]=labelCell('⏳  PENDING',BG_PANEL); lbl1[11]=labelCell('🏆  WIN RATE',BG_PANEL);
+  aoa1.push(lbl1);
+  const val1 = blankRow(BG_PANEL,13);
+  val1[0]=bigValueCell(s.total,C_BLUE,BG_PANEL); val1[4]=bigValueCell(wins,C_GREEN,BG_PANEL);
+  val1[7]=bigValueCell(losses,C_RED,BG_PANEL); val1[9]=bigValueCell(pending,C_ORANGE,BG_PANEL); val1[11]=bigValueCell(winRateLabel,C_PURPLE,BG_PANEL);
+  aoa1.push(val1);
+
+  const headers1 = ['No','Waktu','Arah','Entry ($)','SL ($)','TP ($)','R:R','Mode','Sesi','Setup / Pattern','Status'];
+  const hc1 = [C_GRAY,C_GRAY,C_WHITE,C_GOLD,C_RED,C_GREEN,C_GRAY,C_PURPLE,C_GRAY,C_GRAY,C_WHITE];
+  aoa1.push(headers1.map((h,i)=>({v:h,t:'s',s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:hc1[i]}},fill:{fgColor:{rgb:BG_PANEL}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:allBorder}})));
+
   ordered.forEach((t, idx) => {
-    const resLabel = t.result==='WIN' ? '✓ WIN' : t.result==='LOSS' ? '✗ LOSS' : '⏳ OPEN';
+    const resLabel = t.result==='WIN' ? '✅ TP Hit' : t.result==='LOSS' ? '❌ SL Hit' : '⏳ Pending';
     const resColor = t.result==='WIN' ? C_GREEN : t.result==='LOSS' ? C_RED : C_ORANGE;
     const rowBg = idx%2===0 ? BG_DARK : BG_PANEL;
-    aoa.push([
-      {v:ordered.length-idx, t:'n', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GRAY}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'center'}, border:allBorder}},
-      {v:fmtDate(t.dt), t:'s', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_WHITE}}, fill:{fgColor:{rgb:rowBg}}, border:allBorder}},
-      {v:t.direction, t:'s', s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:t.direction==='BUY'?C_GREEN:C_RED}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'center'}, border:allBorder}},
-      {v:t.pattern, t:'s', s:{font:{name:FONT_UI,sz:9,color:{rgb:C_GRAY}}, fill:{fgColor:{rgb:rowBg}}, border:allBorder}},
-      {v:(t.tf||'')+' · '+(t.mode==='growth'?'Growth':'Conservative'), t:'s', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_PURPLE}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'center'}, border:allBorder}},
-      {v:+t.entry.toFixed(2), t:'n', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GOLD}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'right'}, border:allBorder}},
-      {v:+t.sl.toFixed(2), t:'n', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_RED}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'right'}, border:allBorder}},
-      {v:+t.tp.toFixed(2), t:'n', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GREEN}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'right'}, border:allBorder}},
-      {v:'1 : '+t.rr, t:'s', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GRAY}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'center'}, border:allBorder}},
-      {v:resLabel, t:'s', s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:resColor}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'center'}, border:allBorder}},
-      {v:t.resolvedAt ? fmtDate(t.resolvedAt) : '—', t:'s', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_WHITE}}, fill:{fgColor:{rgb:rowBg}}, border:allBorder}},
-      {v:fmtDuration(t.durationMin), t:'s', s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GRAY}}, fill:{fgColor:{rgb:rowBg}}, alignment:{horizontal:'center'}, border:allBorder}}
+    aoa1.push([
+      {v:ordered.length-idx,t:'n',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GRAY}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'center'},border:allBorder}},
+      {v:fmtDate(t.dt),t:'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_WHITE}},fill:{fgColor:{rgb:rowBg}},border:allBorder}},
+      {v:t.direction,t:'s',s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:t.direction==='BUY'?C_GREEN:C_RED}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'center'},border:allBorder}},
+      {v:+t.entry.toFixed(2),t:'n',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GOLD}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'right'},border:allBorder}},
+      {v:+t.sl.toFixed(2),t:'n',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_RED}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'right'},border:allBorder}},
+      {v:+t.tp.toFixed(2),t:'n',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GREEN}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'right'},border:allBorder}},
+      {v:'1:'+t.rr,t:'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GRAY}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'center'},border:allBorder}},
+      {v:t.mode==='growth'?'Growth':'Conservative',t:'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_PURPLE}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'center'},border:allBorder}},
+      {v:getSessionWIB(new Date(t.dt)),t:'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GRAY}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'center'},border:allBorder}},
+      {v:t.pattern||'-',t:'s',s:{font:{name:FONT_UI,sz:9,color:{rgb:C_WHITE}},fill:{fgColor:{rgb:rowBg}},border:allBorder}},
+      {v:resLabel,t:'s',s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:resColor}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'center'},border:allBorder}}
+    ]);
+  });
+  aoa1.push(blankRow(BG_DARK,13));
+  const foot1 = blankRow(BG_DARK,13);
+  foot1[0] = subLabel(`SMC OB Radar — ${modeLabel} · M5 Scalping  ·  Digenerate: ${todayStr}`, BG_DARK, C_GRAY);
+  aoa1.push(foot1);
+
+  const ws1 = XLSX.utils.aoa_to_sheet(aoa1);
+  ws1['!cols'] = [{wch:5},{wch:15},{wch:8},{wch:12},{wch:12},{wch:12},{wch:8},{wch:13},{wch:11},{wch:34},{wch:14}];
+  ws1['!merges'] = [
+    {s:{r:1,c:0},e:{r:1,c:10}},
+    {s:{r:3,c:0},e:{r:3,c:3}}, {s:{r:3,c:4},e:{r:3,c:6}}, {s:{r:3,c:7},e:{r:3,c:8}}, {s:{r:3,c:9},e:{r:3,c:10}},
+    {s:{r:4,c:0},e:{r:4,c:3}}, {s:{r:4,c:4},e:{r:4,c:6}}, {s:{r:4,c:7},e:{r:4,c:8}}, {s:{r:4,c:9},e:{r:4,c:10}},
+    {s:{r:aoa1.length-1,c:0},e:{r:aoa1.length-1,c:10}}
+  ];
+
+  // ══════════════ SHEET 2: Statistik ══════════════
+  const aoa2 = [];
+  const t2 = blankRow(BG_DARK,7);
+  t2[0] = titleCell(`📈  ANALISA PERFORMA  ·  SMC OB RADAR ${modeLabel} · M5`, C_GOLD, BG_DARK);
+  aoa2.push(t2);
+  const t2b = blankRow(BG_DARK,7); t2b[0] = subLabel(todayStr, BG_DARK, C_GRAY);
+  aoa2.push(t2b);
+  aoa2.push(blankRow(BG_DARK,7));
+
+  const h1r = blankRow(BG_DARK,7); h1r[1] = subLabel('🎯  STATISTIK UTAMA', BG_DARK, C_GOLD);
+  aoa2.push(h1r);
+  const statRows = [
+    ['Total Sinyal', s.total, ''],
+    ['TP Hit (Profit)', wins, s.total ? Math.round(wins/s.total*100)+'% dari total' : '-'],
+    ['SL Hit (Loss)', losses, s.total ? Math.round(losses/s.total*100)+'% dari total' : '-'],
+    ['Pending', pending, s.total ? Math.round(pending/s.total*100)+'% dari total' : '-'],
+    ['Win Rate', winRateLabel, ''],
+    ['Profit Factor', s.total ? (isFinite(s.pf)?s.pf.toFixed(2):'∞') : '-', ''],
+    ['Expectancy (R)', s.total ? (s.expectancy>=0?'+':'')+s.expectancy.toFixed(3) : '-', '']
+  ];
+  statRows.forEach(([label,val,note]) => {
+    const r = blankRow(BG_DARK,7);
+    r[1] = subLabel(label, BG_DARK, C_WHITE);
+    r[2] = subVal(val, BG_DARK, C_BLUE, typeof val==='number');
+    if(note) r[3] = subLabel(note, BG_DARK, C_GRAY);
+    aoa2.push(r);
+  });
+  aoa2.push(blankRow(BG_DARK,7));
+
+  const h2r = blankRow(BG_DARK,7); h2r[1] = subLabel('📅  BREAKDOWN PER SESI (WIB)', BG_DARK, C_GOLD);
+  aoa2.push(h2r);
+  const sessHead = blankRow(BG_PANEL,7);
+  ['Sesi','Total','TP Hit','SL Hit','Win Rate','Pending'].forEach((h,i)=>{ sessHead[1+i] = labelCell(h,BG_PANEL); });
+  aoa2.push(sessHead);
+  const sessIcons = {'Tokyo':'🌏 Tokyo','London':'🕑 London','New York':'🕓 New York'};
+  sessions.forEach(sn => {
+    const d = sessStats[sn] || {total:0,tp:0,sl:0,pending:0};
+    const wr = d.total ? Math.round(d.tp/d.total*100)+'%' : '-';
+    const r = blankRow(BG_DARK,7);
+    r[1]=subLabel(sessIcons[sn]||sn,BG_DARK,C_WHITE); r[2]=subVal(d.total,BG_DARK,C_WHITE,true);
+    r[3]=subVal(d.tp,BG_DARK,C_GREEN,true); r[4]=subVal(d.sl,BG_DARK,C_RED,true);
+    r[5]=subLabel(wr,BG_DARK,C_PURPLE); r[6]=subVal(d.pending,BG_DARK,C_ORANGE,true);
+    aoa2.push(r);
+  });
+  aoa2.push(blankRow(BG_DARK,7));
+
+  const h3r = blankRow(BG_DARK,7); h3r[1] = subLabel('📊  DETAIL SINYAL PER STATUS', BG_DARK, C_GOLD);
+  aoa2.push(h3r);
+  const statusHead = blankRow(BG_PANEL,7);
+  ['Status','Jumlah','% dari Total'].forEach((h,i)=>{ statusHead[1+i] = labelCell(h,BG_PANEL); });
+  aoa2.push(statusHead);
+  [['TP Hit',wins,C_GREEN],['SL Hit',losses,C_RED],['Pending',pending,C_ORANGE]].forEach(([label,val,color]) => {
+    const r = blankRow(BG_DARK,7);
+    r[1]=subLabel(label,BG_DARK,color); r[2]=subVal(val,BG_DARK,C_WHITE,true);
+    r[3]=subLabel(s.total?Math.round(val/s.total*100)+'%':'-',BG_DARK,C_GRAY);
+    aoa2.push(r);
+  });
+
+  const ws2 = XLSX.utils.aoa_to_sheet(aoa2);
+  ws2['!cols'] = [{wch:3},{wch:20},{wch:12},{wch:12},{wch:12},{wch:16},{wch:10}];
+  ws2['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
+
+  // ══════════════ SHEET 3: Journal ══════════════
+  const aoa3 = [];
+  const t3 = blankRow(BG_DARK,8);
+  t3[0] = titleCell(`📝  JOURNAL TRADING  ·  XAUUSD  ·  ${todayStr}`, C_GOLD, BG_DARK, 13);
+  aoa3.push(t3);
+  aoa3.push(blankRow(BG_DARK,8));
+  const jHead = ['No','Tanggal','Sesi','Entry','Exit/SL','Setup/Pola','Analisa & Catatan','Pelajaran'];
+  const jColor = [C_GRAY,C_GRAY,C_GRAY,C_GOLD,C_RED,C_GRAY,C_WHITE,C_WHITE];
+  aoa3.push(jHead.map((h,i)=>({v:h,t:'s',s:{font:{name:FONT_UI,sz:9,bold:true,color:{rgb:jColor[i]}},fill:{fgColor:{rgb:BG_PANEL}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:allBorder}})));
+
+  ordered.filter(t=>t.result!=='OPEN').forEach((t, idx) => {
+    const rowBg = idx%2===0 ? BG_DARK : BG_PANEL;
+    const exitVal = t.result==='WIN' ? t.tp : t.sl;
+    aoa3.push([
+      {v:idx+1,t:'n',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GRAY}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'center'},border:allBorder}},
+      {v:new Date(t.dt).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}),t:'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_WHITE}},fill:{fgColor:{rgb:rowBg}},border:allBorder}},
+      {v:getSessionWIB(new Date(t.dt)),t:'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GRAY}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'center'},border:allBorder}},
+      {v:'$'+t.entry.toFixed(2),t:'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:C_GOLD}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'right'},border:allBorder}},
+      {v:'$'+exitVal.toFixed(2),t:'s',s:{font:{name:FONT_NUM,sz:9,color:{rgb:t.result==='WIN'?C_GREEN:C_RED}},fill:{fgColor:{rgb:rowBg}},alignment:{horizontal:'right'},border:allBorder}},
+      {v:t.pattern||'-',t:'s',s:{font:{name:FONT_UI,sz:9,color:{rgb:C_WHITE}},fill:{fgColor:{rgb:rowBg}},border:allBorder}},
+      {v:'',t:'s',s:{font:{name:FONT_UI,sz:9,color:{rgb:C_WHITE}},fill:{fgColor:{rgb:rowBg}},border:allBorder}},
+      {v:'',t:'s',s:{font:{name:FONT_UI,sz:9,color:{rgb:C_WHITE}},fill:{fgColor:{rgb:rowBg}},border:allBorder}}
     ]);
   });
 
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{wch:5},{wch:15},{wch:8},{wch:14},{wch:11},{wch:11},{wch:11},{wch:11},{wch:8},{wch:10},{wch:15},{wch:9}];
-  ws['!merges'] = [
-    {s:{r:1,c:0}, e:{r:1,c:11}},
-    {s:{r:3,c:0}, e:{r:3,c:1}}, {s:{r:3,c:2}, e:{r:3,c:3}}, {s:{r:3,c:4}, e:{r:3,c:5}}, {s:{r:3,c:6}, e:{r:3,c:11}},
-    {s:{r:4,c:0}, e:{r:4,c:1}}, {s:{r:4,c:2}, e:{r:4,c:3}}, {s:{r:4,c:4}, e:{r:4,c:5}}, {s:{r:4,c:6}, e:{r:4,c:11}}
-  ];
+  const ws3 = XLSX.utils.aoa_to_sheet(aoa3);
+  ws3['!cols'] = [{wch:4},{wch:16},{wch:10},{wch:11},{wch:11},{wch:34},{wch:32},{wch:32}];
+  ws3['!merges'] = [{s:{r:0,c:0},e:{r:0,c:7}}];
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Riwayat Sinyal');
-  XLSX.writeFile(wb, `SMC-MultiTF-Radar-Live_${new Date().toISOString().slice(0,10)}.xlsx`);
-  showToast('✅ Export Berhasil', 'File Excel riwayat sinyal sudah diunduh.');
+  XLSX.utils.book_append_sheet(wb, ws1, '📊 Dashboard');
+  XLSX.utils.book_append_sheet(wb, ws2, '📈 Statistik');
+  XLSX.utils.book_append_sheet(wb, ws3, '📝 Journal');
+  XLSX.writeFile(wb, `SMC-OB-Radar-5M_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('✅ Export Berhasil', 'File Excel (Dashboard + Statistik + Journal) sudah diunduh.');
+}
+
+// Fallback kalau library xlsx-js-style (CDN) gagal termuat — misal karena file dibuka
+// langsung dari file:// / koneksi lambat / diblokir firewall-antivirus. CSV ini murni
+// JS bawaan browser (tanpa dependency luar), jadi tombol export TIDAK PERNAH gagal total.
+function exportCSVFallback(){
+  const trades = lastResult.trades;
+  const s = lastResult.stats;
+  const winRateLabel = s.total ? s.winRate.toFixed(1)+'%' : '-';
+  const pfLabel = s.total ? (isFinite(s.pf) ? s.pf.toFixed(2) : 'Inf') : '-';
+  const expLabel = s.total ? (s.expectancy>=0?'+':'') + s.expectancy.toFixed(3) : '-';
+  const modeLabel = CURRENT_MODE==='growth' ? 'Growth' : 'Conservative';
+  const wins = trades.filter(t=>t.result==='WIN').length;
+  const losses = trades.filter(t=>t.result==='LOSS').length;
+  const pending = trades.filter(t=>t.result==='OPEN').length;
+  const sessions = ['Tokyo','London','New York'];
+  const sessStats = {};
+  sessions.forEach(sn => sessStats[sn] = {total:0, tp:0, sl:0, pending:0});
+  trades.forEach(t => {
+    const sn = getSessionWIB(new Date(t.dt));
+    if(!sessStats[sn]) sessStats[sn] = {total:0, tp:0, sl:0, pending:0};
+    sessStats[sn].total++;
+    if(t.result==='WIN') sessStats[sn].tp++;
+    else if(t.result==='LOSS') sessStats[sn].sl++;
+    else sessStats[sn].pending++;
+  });
+
+  // pakai titik-koma (;) sebagai pemisah — locale Excel Indonesia baca ; sebagai delimiter default
+  const lines = [];
+  lines.push(`SMC OB RADAR - ${modeLabel} - M5 Scalping;${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}`);
+  lines.push('');
+  lines.push('=== STATISTIK UTAMA ===');
+  lines.push(`Total Sinyal;${s.total}`);
+  lines.push(`TP Hit;${wins}`);
+  lines.push(`SL Hit;${losses}`);
+  lines.push(`Pending;${pending}`);
+  lines.push(`Win Rate;${winRateLabel}`);
+  lines.push(`Profit Factor;${pfLabel}`);
+  lines.push(`Expectancy (R);${expLabel}`);
+  lines.push('');
+  lines.push('=== BREAKDOWN PER SESI (WIB) ===');
+  lines.push(['Sesi','Total','TP Hit','SL Hit','Win Rate','Pending'].join(';'));
+  sessions.forEach(sn => {
+    const d = sessStats[sn];
+    const wr = d.total ? Math.round(d.tp/d.total*100)+'%' : '-';
+    lines.push([sn,d.total,d.tp,d.sl,wr,d.pending].join(';'));
+  });
+  lines.push('');
+  lines.push('=== RIWAYAT SINYAL ===');
+  lines.push(['No','Waktu','Arah','Entry ($)','SL ($)','TP ($)','R:R','Mode','Sesi','Setup/Pattern','Status'].join(';'));
+
+  const ordered = trades.slice().reverse();
+  ordered.forEach((t, idx) => {
+    const resLabel = t.result==='WIN' ? 'TP Hit' : t.result==='LOSS' ? 'SL Hit' : 'Pending';
+    const row = [
+      ordered.length-idx,
+      fmtDate(t.dt),
+      t.direction,
+      t.entry.toFixed(2),
+      t.sl.toFixed(2),
+      t.tp.toFixed(2),
+      '1:'+t.rr,
+      t.mode==='growth'?'Growth':'Conservative',
+      getSessionWIB(new Date(t.dt)),
+      t.pattern||'-',
+      resLabel
+    ];
+    lines.push(row.join(';'));
+  });
+
+  const csvContent = '\uFEFF' + lines.join('\r\n'); // BOM biar Excel baca UTF-8 dengan benar
+  const blob = new Blob([csvContent], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `SMC-OB-Radar-5M_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✅ Export CSV Berhasil', 'File CSV (statistik + riwayat sinyal) sudah diunduh.');
 }
 
 // ============================================================
