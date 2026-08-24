@@ -669,8 +669,8 @@
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;">
           <h3 style="margin:0;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 16 14"/></svg>Riwayat Sinyal <span class="pattern-tag" id="tableCount"></span></h3>
           <div style="display:flex;gap:6px;">
-            <input type="file" id="importFileInput" accept=".csv" style="display:none;" onchange="handleImportFile(event)">
-            <button class="icon-btn" style="padding:6px 11px;font-size:10.5px;" onclick="document.getElementById('importFileInput').click()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import CSV</button>
+            <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="handleImportFile(event)">
+            <button class="icon-btn" style="padding:6px 11px;font-size:10.5px;" onclick="document.getElementById('importFileInput').click()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
             <button class="icon-btn" style="padding:6px 11px;font-size:10.5px;" onclick="exportExcel()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/></svg>Export Excel</button>
           </div>
         </div>
@@ -2151,13 +2151,63 @@ function normalizeMode(str){
   return s.includes('growth') ? 'growth' : 'conservative';
 }
 function parseCSVLine(line, delim){
-  // sederhana: file kita sendiri tidak pakai quote/escape, cukup split langsung
-  return line.split(delim).map(c => c.trim());
+  // parser yang paham tanda kutip "..." (dipakai Excel/Google Sheets saat export/convert CSV),
+  // sekaligus tetap kompatibel dengan CSV polos tanpa kutip (hasil export bawaan dashboard ini).
+  const result = [];
+  let cur = '', inQuotes = false;
+  for(let i=0;i<line.length;i++){
+    const ch = line[i];
+    if(inQuotes){
+      if(ch === '"'){
+        if(line[i+1] === '"'){ cur += '"'; i++; } // "" di dalam kutip = escape utk karakter kutip literal
+        else inQuotes = false;
+      } else cur += ch;
+    } else {
+      if(ch === '"') inQuotes = true;
+      else if(ch === delim){ result.push(cur); cur=''; }
+      else cur += ch;
+    }
+  }
+  result.push(cur);
+  return result.map(c => c.trim());
 }
 
 function handleImportFile(event){
   const file = event.target.files[0];
   if(!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  if(ext === 'xlsx' || ext === 'xls'){
+    if(typeof XLSX === 'undefined'){
+      showToast('❌ Gagal Import', 'Library Excel belum termuat (cek koneksi internet), coba export/convert dulu ke CSV.');
+      event.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try{
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:'array'});
+        // prioritaskan sheet "Dashboard" (isinya tabel riwayat sinyal lengkap);
+        // kalau nggak ketemu namanya persis, pakai sheet pertama yang punya kolom Waktu/Arah/Entry
+        let targetSheetName = wb.SheetNames.find(n => n.toLowerCase().includes('dashboard'))
+          || wb.SheetNames.find(n => {
+              const csv = XLSX.utils.sheet_to_csv(wb.Sheets[n]);
+              return /waktu/i.test(csv) && /arah/i.test(csv) && /entry/i.test(csv);
+            })
+          || wb.SheetNames[0];
+        const csvText = XLSX.utils.sheet_to_csv(wb.Sheets[targetSheetName]);
+        importFromCSVText(csvText);
+      }catch(err){
+        showToast('❌ Gagal Import', 'File Excel tidak bisa dibaca: ' + err.message);
+      }
+      event.target.value = '';
+    };
+    reader.onerror = () => { showToast('❌ Gagal Import', 'File tidak bisa dibuka.'); event.target.value = ''; };
+    reader.readAsArrayBuffer(file);
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = (e) => {
     try{
