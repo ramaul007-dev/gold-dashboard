@@ -637,23 +637,42 @@
       </div>
 
       <div class="card violet-card">
-        <h3><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>EMA Sweep Test (H4)</h3>
-        <div class="hint" style="margin:0 0 10px;">Nyobain beberapa periode EMA H4 (50/75/100/150/200) ke data historis yang sama, biar kelihatan mana yang PF/WR-nya paling bagus buat mode <b id="sweepModeLabel">Conservative</b> yang lagi aktif. H1 tetap EMA50.</div>
-        <div class="rr-select" id="sweepMonthSelect" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px;">
-          <button data-months="1" class="bt-month-btn">1 Bulan</button>
-          <button data-months="3" class="bt-month-btn active">3 Bulan</button>
-          <button data-months="6" class="bt-month-btn">6 Bulan</button>
-          <button data-months="12" class="bt-month-btn">12 Bulan</button>
+        <h3 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onclick="toggleSweepPanel()">
+          <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>EMA Sweep Test (H4)</span>
+          <svg id="sweepChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
+        </h3>
+        <div id="sweepPanelBody" style="display:none;">
+          <div class="hint" style="margin:0 0 10px;">Nyobain beberapa periode EMA H4 (50/75/100/150/200) ke data historis yang sama, biar kelihatan mana yang PF/WR-nya paling bagus buat mode <b id="sweepModeLabel">Conservative</b> yang lagi aktif. H1 tetap EMA50.</div>
+          <div class="rr-select" id="sweepMonthSelect" style="grid-template-columns:repeat(4,1fr);margin-bottom:10px;">
+            <button data-months="1" class="bt-month-btn">1 Bulan</button>
+            <button data-months="3" class="bt-month-btn active">3 Bulan</button>
+            <button data-months="6" class="bt-month-btn">6 Bulan</button>
+            <button data-months="12" class="bt-month-btn">12 Bulan</button>
+          </div>
+          <button class="icon-btn" id="btnRunSweep" style="width:100%;padding:10px;font-size:12px;justify-content:center;" onclick="runEmaSweep(getSweepMonths())">▶ Jalankan EMA Sweep</button>
+          <div class="hint" id="sweepStatus" style="margin-top:10px;">Belum dijalankan. Butuh Twelve Data API Key. Makin panjang periode, makin banyak API call.</div>
+          <div id="sweepResult" style="margin-top:10px;"></div>
         </div>
-        <button class="icon-btn" id="btnRunSweep" style="width:100%;padding:10px;font-size:12px;justify-content:center;" onclick="runEmaSweep(getSweepMonths())">▶ Jalankan EMA Sweep</button>
-        <div class="hint" id="sweepStatus" style="margin-top:10px;">Belum dijalankan. Butuh Twelve Data API Key. Makin panjang periode, makin banyak API call.</div>
-        <div id="sweepResult" style="margin-top:10px;"></div>
       </div>
+
+      <script>
+        function toggleSweepPanel(){
+          const body = document.getElementById('sweepPanelBody');
+          const chev = document.getElementById('sweepChevron');
+          const open = body.style.display !== 'none';
+          body.style.display = open ? 'none' : 'block';
+          chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+      </script>
 
       <div class="card card-fill riwayat-card">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;">
           <h3 style="margin:0;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 16 14"/></svg>Riwayat Sinyal <span class="pattern-tag" id="tableCount"></span></h3>
-          <button class="icon-btn" style="padding:6px 11px;font-size:10.5px;" onclick="exportExcel()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/></svg>Export Excel</button>
+          <div style="display:flex;gap:6px;">
+            <input type="file" id="importFileInput" accept=".csv" style="display:none;" onchange="handleImportFile(event)">
+            <button class="icon-btn" style="padding:6px 11px;font-size:10.5px;" onclick="document.getElementById('importFileInput').click()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import CSV</button>
+            <button class="icon-btn" style="padding:6px 11px;font-size:10.5px;" onclick="exportExcel()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/></svg>Export Excel</button>
+          </div>
         </div>
         <div class="hist-filters">
           <button class="bd-tab active" data-hist="all" onclick="setHistoryFilter('all')">Semua</button>
@@ -2098,6 +2117,150 @@ function exportCSVFallback(){
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('✅ Export CSV Berhasil', 'File CSV (statistik + riwayat sinyal) sudah diunduh.');
+}
+
+// ============================================================
+// IMPORT CSV — baca file hasil export tadi (atau versi lama),
+// masukkan lagi ke tradeLog + localStorage biar riwayat pindah
+// origin (misal dari file:// lokal ke GitHub Pages) tidak hilang.
+// ============================================================
+const ID_MONTHS = ['jan','feb','mar','apr','mei','jun','jul','agu','sep','okt','nov','des'];
+function parseIdDate(str){
+  // format dari fmtDate(): "24 Agu, 07.25" (tanpa tahun, pemisah jam pakai titik)
+  if(!str) return null;
+  const m = str.trim().match(/^(\d{1,2})\s+([A-Za-z]+)\.?,?\s*(\d{1,2})[.:](\d{2})/);
+  if(!m) return null;
+  const day = parseInt(m[1],10);
+  const monIdx = ID_MONTHS.indexOf(m[2].toLowerCase().slice(0,3));
+  if(monIdx < 0) return null;
+  const hour = parseInt(m[3],10), min = parseInt(m[4],10);
+  const now = new Date();
+  let year = now.getFullYear();
+  let d = new Date(year, monIdx, day, hour, min);
+  if(d.getTime() > now.getTime() + 24*3600*1000){ d = new Date(year-1, monIdx, day, hour, min); } // tanggal "masa depan" -> kemungkinan tahun lalu
+  return d;
+}
+function normalizeStatus(str){
+  const s = (str||'').toUpperCase();
+  if(s.includes('TP') || s.includes('WIN')) return 'WIN';
+  if(s.includes('SL') || s.includes('LOSS')) return 'LOSS';
+  return 'OPEN';
+}
+function normalizeMode(str){
+  const s = (str||'').toLowerCase();
+  return s.includes('growth') ? 'growth' : 'conservative';
+}
+function parseCSVLine(line, delim){
+  // sederhana: file kita sendiri tidak pakai quote/escape, cukup split langsung
+  return line.split(delim).map(c => c.trim());
+}
+
+function handleImportFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      importFromCSVText(e.target.result);
+    }catch(err){
+      showToast('❌ Gagal Import', 'File tidak bisa dibaca: ' + err.message);
+    }
+    event.target.value = ''; // reset biar bisa pilih file yang sama lagi kalau perlu
+  };
+  reader.onerror = () => showToast('❌ Gagal Import', 'File tidak bisa dibuka.');
+  reader.readAsText(file, 'utf-8');
+}
+
+function importFromCSVText(text){
+  const clean = text.replace(/^\uFEFF/, ''); // buang BOM kalau ada
+  const rawLines = clean.split(/\r\n|\n/).filter(l => l.trim() !== '');
+  if(rawLines.length < 2){ showToast('⚠️ File Kosong', 'Tidak ada data yang bisa diimport.'); return; }
+
+  const delim = rawLines[0].includes(';') ? ';' : ',';
+
+  // cari baris header tabel riwayat sinyal (bisa format baru atau lama)
+  let headerIdx = -1;
+  for(let i=0;i<rawLines.length;i++){
+    const cols = parseCSVLine(rawLines[i], delim).map(c=>c.toLowerCase());
+    const hasWaktu = cols.some(c => c==='waktu' || c==='masuk');
+    const hasArah = cols.includes('arah');
+    const hasEntry = cols.some(c => c.startsWith('entry'));
+    if(hasWaktu && hasArah && hasEntry){ headerIdx = i; break; }
+  }
+  if(headerIdx === -1){ showToast('❌ Format Tidak Dikenali', 'Tidak ditemukan tabel riwayat sinyal di file ini.'); return; }
+
+  const headers = parseCSVLine(rawLines[headerIdx], delim).map(c=>c.toLowerCase());
+  const col = {};
+  headers.forEach((h,i) => {
+    if(h==='waktu' || h==='masuk') col.waktu = i;
+    else if(h==='arah') col.arah = i;
+    else if(h.startsWith('entry')) col.entry = i;
+    else if(h==='sl' || h.startsWith('sl ')) col.sl = i;
+    else if(h==='tp' || h.startsWith('tp ')) col.tp = i;
+    else if(h==='r:r') col.rr = i;
+    else if(h==='mode') col.mode = i;
+    else if(h==='sesi') col.sesi = i;
+    else if(h.startsWith('setup')) col.pattern = i;
+    else if(h==='status' || h==='hasil') col.status = i;
+  });
+  if(col.waktu===undefined || col.arah===undefined || col.entry===undefined){
+    showToast('❌ Format Tidak Dikenali', 'Kolom wajib (Waktu/Arah/Entry) tidak lengkap.'); return;
+  }
+
+  const imported = [];
+  for(let i=headerIdx+1; i<rawLines.length; i++){
+    const rowStr = rawLines[i];
+    if(rowStr.startsWith('===')) break; // ketemu section lain -> selesai tabel riwayat
+    const c = parseCSVLine(rowStr, delim);
+    if(c.length < 3) continue;
+    const dt = parseIdDate(c[col.waktu]);
+    if(!dt) continue;
+    const direction = (c[col.arah]||'').toUpperCase().includes('SELL') ? 'SELL' : 'BUY';
+    const entry = parseFloat(c[col.entry]);
+    const sl = col.sl!==undefined ? parseFloat(c[col.sl]) : null;
+    const tp = col.tp!==undefined ? parseFloat(c[col.tp]) : null;
+    if(isNaN(entry) || sl===null || tp===null || isNaN(sl) || isNaN(tp)) continue;
+    const rrRaw = col.rr!==undefined ? c[col.rr] : '1';
+    const rr = parseFloat((rrRaw||'1').replace(/^1\s*:\s*/,'')) || 1;
+    imported.push({
+      id: dt.getTime() + Math.round(Math.random()*999),
+      dt, signalCandleDt: null,
+      direction, pattern: col.pattern!==undefined ? (c[col.pattern]||'-') : '-',
+      entry, sl, tp, rr,
+      tf: 'M5', mode: col.mode!==undefined ? normalizeMode(c[col.mode]) : 'conservative',
+      result: col.status!==undefined ? normalizeStatus(c[col.status]) : 'OPEN',
+      resolvedAt: null, durationMin: null
+    });
+  }
+
+  if(imported.length === 0){ showToast('⚠️ Tidak Ada Data Valid', 'File terbaca tapi tidak ada baris sinyal yang valid.'); return; }
+
+  // dedup: skip kalau kombinasi waktu+arah+entry sudah ada di tradeLog sekarang
+  const existingKeys = new Set(tradeLog.map(t => `${new Date(t.dt).getTime()}_${t.direction}_${t.entry}`));
+  let addedCount = 0, skippedCount = 0;
+  imported.forEach(t => {
+    const key = `${t.dt.getTime()}_${t.direction}_${t.entry}`;
+    if(existingKeys.has(key)){ skippedCount++; return; }
+    existingKeys.add(key);
+    tradeLog.push(t);
+    addedCount++;
+  });
+
+  tradeLog.sort((a,b) => new Date(b.dt) - new Date(a.dt));
+  saveTradeLogLS();
+
+  const msg = skippedCount>0
+    ? `${addedCount} sinyal baru ditambahkan, ${skippedCount} duplikat dilewati.`
+    : `${addedCount} sinyal berhasil ditambahkan ke riwayat.`;
+  showToast('✅ Import Berhasil', msg);
+
+  // susun ulang lastResult dari tradeLog yang baru (fungsi ini sudah ada di dashboard,
+  // dipakai juga oleh live-scan biasa) lalu render ulang semua panel yang bergantung padanya
+  if(typeof rebuildLastResultFromLog === 'function'){
+    rebuildLastResultFromLog();
+    if(typeof renderAll === 'function') renderAll();
+    if(typeof renderModeCompare === 'function') renderModeCompare();
+  }
 }
 
 // ============================================================
