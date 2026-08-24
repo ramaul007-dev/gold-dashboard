@@ -2305,10 +2305,15 @@ function importFromCSVText(text){
   showToast('✅ Import Berhasil', msg);
 
   // susun ulang lastResult dari tradeLog yang baru (fungsi ini sudah ada di dashboard,
-  // dipakai juga oleh live-scan biasa) lalu render ulang semua panel yang bergantung padanya
+  // dipakai juga oleh live-scan biasa) lalu render ulang panel yang bergantung padanya.
+  // CATATAN: sengaja TIDAK panggil renderAll()/renderChecklist() di sini — checklist itu
+  // butuh lastPipeline dari hasil scan live (getPipelineStatus), yang belum tentu ada kalau
+  // user import sebelum pernah klik Refresh/Mulai Auto Scan sama sekali di sesi ini.
   if(typeof rebuildLastResultFromLog === 'function'){
     rebuildLastResultFromLog();
-    if(typeof renderAll === 'function') renderAll();
+    if(typeof renderStats === 'function') renderStats();
+    if(typeof renderEquity === 'function') renderEquity();
+    if(typeof renderTable === 'function') renderTable();
     if(typeof renderModeCompare === 'function') renderModeCompare();
   }
 }
