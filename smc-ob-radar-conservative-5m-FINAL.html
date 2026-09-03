@@ -676,6 +676,14 @@
         </details>
       </div>
 
+      <div class="card violet-card">
+        <details class="config" id="limitAreaDetailsOBR">
+          <summary style="text-transform:none;font-size:inherit;font-family:inherit;font-weight:inherit;color:inherit;letter-spacing:normal;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:1px"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 4-8"/></svg>Area Limit Order</summary>
+          <div id="limitAreaBodyOBR" style="margin-top:8px;"><div class="hint">Klik Refresh dulu buat lihat saran area Buy Limit / Sell Limit.</div></div>
+          <div class="hint" style="margin-top:4px;">Dihitung dari zona Order Block M5 yang masih aktif (searah bias). Ini bantu baca struktur harga, <b>bukan rekomendasi finansial</b> — tetap cek checklist "Entry Siap" sebelum eksekusi.</div>
+        </details>
+      </div>
+
       <div class="card card-fill riwayat-card">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;">
           <h3 style="margin:0;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 16 14"/></svg>Riwayat Sinyal <span class="pattern-tag" id="tableCount"></span></h3>
@@ -856,7 +864,7 @@ function detectSmcSignals(m15, h4OnM15, h1OnM15, lookahead=30){
     }
     activeOB = stillActive;
   }
-  return {sig, source};
+  return {sig, source, activeOB};
 }
 
 // Scan seluruh riwayat H4+H1+M15: bangun daftar trade lengkap (dipakai statistik & riwayat sinyal)
@@ -957,7 +965,8 @@ function getPipelineStatus(h4Candles, h1Candles, m15Candles, mode='conservative'
 
   const h4OnM15 = alignHtfToM15(m15Candles, h4Candles, h4Trend);
   const h1OnM15 = alignHtfToM15(m15Candles, h1Candles, h1Trend);
-  const {sig, source} = detectSmcSignals(m15Candles, h4OnM15, h1OnM15);
+  const {sig, source, activeOB} = detectSmcSignals(m15Candles, h4OnM15, h1OnM15);
+  lastActiveOB = activeOB; // dipakai fitur Area Limit Order — snapshot OB zone paling baru
   const i = m15Candles.length-1;
   if(sig[i]===0){
     items[3] = {label:'Setup M5 (Engulfing/OB)', done:false, detail:'Belum ada engulfing candle atau retest zona Order Block yang searah bias'};
@@ -1014,6 +1023,42 @@ const SMC_TF = {
 };
 let lastDataSource = null;
 let lastFormingCandle = null;
+let lastActiveOB = []; // snapshot zona OB M5 yang masih aktif, diisi tiap getPipelineStatus() jalan
+
+// Cari area harga wajar buat pasang Buy Limit / Sell Limit, dari zona Order Block M5
+// yang masih aktif (belum expire/kepakai). Beda dari MTF Confluence, di sini gak ada
+// pengecekan overlap H1 terpisah — cukup zona OB M5 yang searah bias yang lagi berlaku.
+// CATATAN: cuma bantu baca struktur harga, bukan rekomendasi jual/beli.
+function computeLimitAreasOBR(){
+  if(!lastActiveOB.length || livePrice==null) return { buy:null, sell:null };
+  function findBest(dir, wantBelowPrice){
+    let candidates = lastActiveOB.filter(z=>z.type===dir).map(z=>({top:z.hi, bottom:z.lo}));
+    candidates = candidates.filter(z => wantBelowPrice ? z.top <= livePrice*1.001 : z.bottom >= livePrice*0.999);
+    if(!candidates.length) return null;
+    candidates.sort((a,b)=>{
+      const da = wantBelowPrice ? Math.abs(livePrice-a.top) : Math.abs(a.bottom-livePrice);
+      const db = wantBelowPrice ? Math.abs(livePrice-b.top) : Math.abs(b.bottom-livePrice);
+      return da-db;
+    });
+    const best = candidates[0];
+    return { top:best.top, bottom:best.bottom, mid:(best.top+best.bottom)/2 };
+  }
+  return { buy: findBest('bull', true), sell: findBest('bear', false) };
+}
+function renderLimitAreasOBR(){
+  const host = document.getElementById('limitAreaBodyOBR');
+  if(!host) return;
+  const { buy, sell } = computeLimitAreasOBR();
+  function block(label, z, color){
+    if(!z) return `<div class="hint" style="margin-bottom:8px;">${label}: belum ada zona Order Block M5 aktif yang wajar di arah ini.</div>`;
+    return `<div class="stat2" style="margin-bottom:8px;">
+        <div class="k" style="color:${color};">${label}</div>
+        <div class="v" style="color:${color};">$${z.bottom.toFixed(2)} – $${z.top.toFixed(2)}</div>
+        <div class="hint" style="margin-top:2px;">Order di sekitar $${z.mid.toFixed(2)}</div>
+      </div>`;
+  }
+  host.innerHTML = block('BUY LIMIT', buy, 'var(--gn)') + block('SELL LIMIT', sell, 'var(--rust-bright)');
+}
 
 function trimToClosedCandles(candles, tfKey){
   if(candles.length<2) return candles;
@@ -1202,6 +1247,7 @@ function connectFinnhub(){
         checkOpenSignalAgainstLive();
         refreshOpenBadges();
         schedulePDZoneLiveRender();
+        renderLimitAreasOBR();
       }
     };
     fhSocket.onerror = () => {
@@ -1256,6 +1302,7 @@ async function pollGoldApi(){
     checkOpenSignalAgainstLive();
     refreshOpenBadges();
     schedulePDZoneLiveRender();
+        renderLimitAreasOBR();
   }catch(e){ setStatus('err', 'gold-api.com error — mencoba lagi...'); }
 }
 function startGoldApiPricePolling(){
@@ -1402,6 +1449,50 @@ function openLiveSignal(p, mode){
 
 // Dipanggil tiap ada tick harga live baru — SATU-SATUNYA jalan sinyal bisa
 // berubah dari OPEN ke WIN/LOSS, lintas semua mode yang lagi OPEN.
+// BUG YANG DIPERBAIKI: sebelumnya TP/SL cuma dicek dari tick harga LIVE (checkOpenTradesLive),
+// jadi kalau tab/browser sempat ketutup atau koneksi putus pas harga nyentuh TP/SL, momennya
+// kelewat dan sinyal nyangkut "OPEN" terus walau harga udah balik jauh. Fungsi ini nge-cek ULANG
+// tiap sinyal OPEN terhadap HIGH/LOW candle M5 histori (bukan cuma harga sekarang) setiap kali
+// data di-refresh — jadi TP/SL yang kelewat pas app nggak aktif tetap kedeteksi belakangan.
+function reconcileOpenTradesAgainstCandles(candles){
+  if(!candles || !candles.length || !tradeLog.length) return;
+  let changed = false;
+  tradeLog.forEach(t=>{
+    if(t.result!=='OPEN') return;
+    const relevant = candles.filter(c => c.dt.getTime() >= t.dt.getTime());
+    for(const c of relevant){
+      let hit = null;
+      // Kalau 1 candle nyentuh SL & TP sekaligus, diasumsikan SL duluan (sikap konservatif —
+      // gak bisa dipastikan urutannya tanpa data tick candle itu, jadi ambil yg lebih aman).
+      if(t.direction==='BUY'){
+        if(c.low <= t.sl) hit = 'LOSS';
+        else if(c.high >= t.tp) hit = 'WIN';
+      } else {
+        if(c.high >= t.sl) hit = 'LOSS';
+        else if(c.low <= t.tp) hit = 'WIN';
+      }
+      if(hit){
+        t.result = hit;
+        t.resolvedAt = c.dt;
+        t.durationMin = Math.round((t.resolvedAt - t.dt)/60000);
+        changed = true;
+        const modeLabel = t.mode==='growth' ? 'Growth' : 'Conservative';
+        showToast(hit==='WIN' ? '✅ Target Tercapai (terlewat, baru kedeteksi)' : '⛔ Stop Loss Kena (terlewat, baru kedeteksi)', `${t.direction} ${modeLabel} ${t.pattern} — hasil: ${hit}`);
+        playBeep(hit==='WIN');
+        sendTelegram(`${hit==='WIN'?'✅':'⛔'} <b>${t.direction}</b> XAUUSD (${modeLabel}) — ${hit} <i>(baru kedeteksi — kelewat pas app gak aktif)</i>\nEntry: ${t.entry.toFixed(2)} | SL: ${t.sl.toFixed(2)} | TP: ${t.tp.toFixed(2)}`);
+        break;
+      }
+    }
+  });
+  if(changed){
+    saveTradeLogLS();
+    rebuildLastResultFromLog();
+    renderStats(); renderEquity(); renderTable();
+    renderModeCompare();
+    renderRegimePanel();
+    refreshOpenBadges();
+  }
+}
 function checkOpenTradesLive(currentPrice){
   if(currentPrice==null) return;
   let changed = false;
@@ -1495,8 +1586,10 @@ async function refreshCandlesAndSignal(notify=false){
   try{
     const {h4, h1, m15} = await fetchSmcData();
     lastH4Candles = h4; lastH1Candles = h1; lastM15Candles = m15;
+    reconcileOpenTradesAgainstCandles(m15);
     lastPipeline = getPipelineStatus(h4, h1, m15, CURRENT_MODE, livePrice);
     renderPDZone();
+    renderLimitAreasOBR();
 
     // meta ringan (bias H4 + ATR terkini) buat panel checklist — gak lagi lewat runLive() batch
     const h4TrendNow = htfTrendFlags(h4, 100);
