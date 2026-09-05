@@ -539,9 +539,13 @@
         </details>
       </div>
 
-      <div class="card black-bg-card">
-        <h3><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M3 3v18h18"/><path d="M18.7 8 12 14.7 8 10.7 3.7 15"/></svg>Strategi</h3>
+      <div class="card black-bg-card" id="cardStrategi">
+        <h3 class="collapsible-head" onclick="toggleCardCollapse('cardStrategi')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8 12 14.7 8 10.7 3.7 15"/></svg>Strategi
+        </h3>
+        <div class="card-body">
         <div class="hint" style="margin:0;"><b style="color:var(--gold);">SMC OB Radar — 5M</b> — Bias H4 (EMA100) + H1 selaras (EMA50) + Entry M5 (Engulfing/Order Block). Varian scalping dari SMC OB Radar M15, entry timeframe diganti ke M5 buat sinyal lebih sering. Hasil backtest 13 bulan data M5 asli: Conservative WR ~73.9%, PF ~1.42 (~5.5 sinyal/hari); Growth WR ~49.8%, PF ~1.65 (~3.0 sinyal/hari).</div>
+        </div>
       </div>
 
       <div class="card black-bg-card" id="modeCard">
@@ -578,7 +582,13 @@
 
       <div class="card black-bg-card">
         <details class="config" id="pdZoneDetails" open>
-          <summary style="text-transform:none;font-size:inherit;font-family:inherit;font-weight:inherit;color:inherit;letter-spacing:normal;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:1px"><path d="M3 3v18h18"/><path d="M21 6 13 14l-4-4-6 6"/></svg>Zona Premium/Discount (H4)</summary>
+          <summary style="text-transform:none;font-size:inherit;font-family:inherit;font-weight:inherit;color:inherit;letter-spacing:normal;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:1px"><path d="M3 3v18h18"/><path d="M21 6 13 14l-4-4-6 6"/></svg>Zona Premium/Discount</summary>
+          <div class="rr-select" id="pdZoneTfSelect" style="margin-top:8px;">
+            <button data-tf="H4" class="active" onclick="setPdZoneTf('H4')" style="padding:4px 0;font-size:11px;">H4</button>
+            <button data-tf="H1" onclick="setPdZoneTf('H1')" style="padding:4px 0;font-size:11px;">H1</button>
+            <button data-tf="M15" onclick="setPdZoneTf('M15')" style="padding:4px 0;font-size:11px;">15M</button>
+            <button data-tf="M5" onclick="setPdZoneTf('M5')" style="padding:4px 0;font-size:11px;">M5</button>
+          </div>
           <div style="position:relative;width:100%;height:190px;margin-top:8px;"><canvas id="pdZoneCanvas" style="width:100%;height:100%;display:block;"></canvas></div>
           <div class="hint" id="pdZoneHint" style="margin-top:6px;">Swing high/low H4 60 candle terakhir (~10 hari). Murni konteks visual — TIDAK menyaring sinyal entry, cuma bantu baca bias premium (mahal, condong jual) vs discount (murah, condong beli).</div>
         </details>
@@ -1323,7 +1333,42 @@ function startLiveTick(){
   if(key) connectFinnhub(); else startGoldApiPricePolling();
 }
 // ═══════ ZONA PREMIUM/DISCOUNT (H4) — murni visual, gak nge-gate sinyal entry ═══════
-const PD_LOOKBACK_H4 = 60; // ~10 hari candle H4
+// Lookback disesuaikan per timeframe: H4/H1 pakai rentang beberapa hari (swing lebih besar),
+// 15M/M5 pakai rentang ~1 hari (biar zona-nya relevan buat scalping intraday, bukan kejauhan).
+const PD_LOOKBACK = { H4:60, H1:100, M15:96, M5:288 };
+const PD_LOOKBACK_LABEL = { H4:'~10 hari', H1:'~4 hari', M15:'~1 hari', M5:'~1 hari' };
+let pdZoneActiveTf = 'H4';
+// M15 (15 menit) gak di-fetch langsung dari API (biar hemat kuota) — di-resample dari data M5
+// yang udah ada (grup 3 candle M5 jadi 1 candle 15M), jadi nggak nambah beban API key kamu.
+function resampleCandles(candles, groupSize){
+  const out = [];
+  for(let i=0;i<candles.length;i+=groupSize){
+    const chunk = candles.slice(i, i+groupSize);
+    if(chunk.length < groupSize) break;
+    out.push({
+      dt: chunk[0].dt,
+      open: chunk[0].open,
+      high: Math.max(...chunk.map(c=>c.high)),
+      low: Math.min(...chunk.map(c=>c.low)),
+      close: chunk[chunk.length-1].close,
+    });
+  }
+  return out;
+}
+function getPdZoneCandles(tf){
+  if(tf==='H4') return lastH4Candles;
+  if(tf==='H1') return lastH1Candles;
+  if(tf==='M5') return lastM15Candles; // nama variabel lama, isinya M5 asli
+  if(tf==='M15') return lastM15Candles ? resampleCandles(lastM15Candles, 3) : null;
+  return null;
+}
+function setPdZoneTf(tf){
+  pdZoneActiveTf = tf;
+  document.querySelectorAll('#pdZoneTfSelect button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tf===tf);
+  });
+  renderPDZone();
+}
 let pdZoneRAF = null;
 function schedulePDZoneLiveRender(){
   if(!lastH4Candles) return;
@@ -1332,9 +1377,11 @@ function schedulePDZoneLiveRender(){
 }
 function renderPDZone(){
   const canvas = document.getElementById('pdZoneCanvas');
-  if(!canvas || !lastH4Candles || lastH4Candles.length<10) return;
-  const n = lastH4Candles.length;
-  const slice = lastH4Candles.slice(Math.max(0,n-PD_LOOKBACK_H4));
+  const candlesSrc = getPdZoneCandles(pdZoneActiveTf);
+  const lookback = PD_LOOKBACK[pdZoneActiveTf];
+  if(!canvas || !candlesSrc || candlesSrc.length<10) return;
+  const n = candlesSrc.length;
+  const slice = candlesSrc.slice(Math.max(0,n-lookback));
   const hi = Math.max(...slice.map(c=>c.high));
   const lo = Math.min(...slice.map(c=>c.low));
   const eq = (hi+lo)/2;
@@ -1385,7 +1432,7 @@ function renderPDZone(){
     statusTxt = livePrice > eq ? 'PREMIUM (condong SELL)' : (livePrice < eq ? 'DISCOUNT (condong BUY)' : 'EQUILIBRIUM (netral)');
   }
   const hintEl = document.getElementById('pdZoneHint');
-  if(hintEl) hintEl.innerHTML = `Swing H4 ${slice.length} candle terakhir (~10 hari). Harga sekarang: <b>${statusTxt}</b>. Murni konteks visual — TIDAK menyaring sinyal entry.`;
+  if(hintEl) hintEl.innerHTML = `Swing ${pdZoneActiveTf} ${slice.length} candle terakhir (${PD_LOOKBACK_LABEL[pdZoneActiveTf]}). Harga sekarang: <b>${statusTxt}</b>. Murni konteks visual — TIDAK menyaring sinyal entry.`;
 }
 window.addEventListener('resize', ()=>{ if(lastH4Candles) renderPDZone(); });
 
